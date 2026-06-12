@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+html,
+body {
+  background: #070b14;
+  color: #e7eefc;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Futuristic grid + aurora background */
+.bg-arena {
+  background:
+    radial-gradient(900px 500px at 15% -10%, rgba(124, 92, 255, 0.18), transparent 60%),
+    radial-gradient(900px 600px at 100% 0%, rgba(56, 225, 255, 0.14), transparent 55%),
+    linear-gradient(180deg, #070b14 0%, #070b14 100%);
+}
+.bg-grid::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(56, 225, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 225, 255, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at 50% 30%, black, transparent 85%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glass {
+  background: rgba(13, 20, 38, 0.72);
+  border: 1px solid rgba(56, 225, 255, 0.14);
+  backdrop-filter: blur(10px);
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 font-semibold transition-all;
+  background: linear-gradient(135deg, #38e1ff, #7c5cff);
+  color: #06101f;
+  box-shadow: 0 0 24px rgba(56, 225, 255, 0.35);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 36px rgba(124, 92, 255, 0.5); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-2.5 font-medium transition-all;
+  border-color: rgba(56, 225, 255, 0.25);
+  color: #cfe3ff;
+}
+.btn-ghost:hover { border-color: rgba(56, 225, 255, 0.6); background: rgba(56, 225, 255, 0.06); }
+
+.option-card {
+  @apply w-full text-left rounded-xl border px-4 py-3.5 transition-all cursor-pointer;
+  border-color: rgba(120, 140, 180, 0.22);
+  background: rgba(255, 255, 255, 0.02);
+}
+.option-card:hover { border-color: rgba(56, 225, 255, 0.5); background: rgba(56, 225, 255, 0.05); }
+.option-selected {
+  border-color: #38e1ff !important;
+  background: rgba(56, 225, 255, 0.1) !important;
+  box-shadow: 0 0 18px rgba(56, 225, 255, 0.25);
+}
+
+.chip { @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium; }
+
+input, select, textarea {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(120,140,180,0.25);
+  border-radius: 0.6rem;
+  color: #e7eefc;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #38e1ff;
+  box-shadow: 0 0 0 3px rgba(56,225,255,0.15);
+}
+select option { background: #0d1426; }
