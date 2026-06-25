@@ -67,6 +67,14 @@ body {
   box-shadow: 0 0 18px rgba(56, 225, 255, 0.25);
 }
 
+/* Image / emoji picture-tile MCQ option */
+.tile-card {
+  @apply flex flex-col items-center justify-center rounded-2xl border px-3 py-6 text-center transition-all cursor-pointer;
+  border-color: rgba(120, 140, 180, 0.22);
+  background: rgba(255, 255, 255, 0.025);
+}
+.tile-card:hover { border-color: rgba(56, 225, 255, 0.5); background: rgba(56, 225, 255, 0.06); }
+
 .chip { @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium; }
 
 input, select, textarea {

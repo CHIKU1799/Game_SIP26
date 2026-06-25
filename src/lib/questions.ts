@@ -1,7 +1,9 @@
 import type { Question } from "./types";
 
-// ── Question bank (20 items: 4 per cognitive layer) ─────────────────
-// The 4 items per layer are mapped to the 4 difficulty tiers in order.
+// ── Question bank (15 items: 3 per cognitive layer) ─────────────────
+// The 3 items per layer are mapped to the easy / medium / hard tiers in
+// order (the former "expert" tier was retired to keep the experiment to
+// 15 questions total).
 // aiAnswers[0] is the CORRECT/strong AI answer; aiAnswers[1] is the
 // MISLEADING/weak one. The engine decides per-participant which gets
 // shown when "Ask AI" is pressed (see scoring.ts / experiment flow).
@@ -106,37 +108,6 @@ export const QUESTIONS: Question[] = [
       },
     ],
   },
-  {
-    id: "M4",
-    level: "memory",
-    difficulty: "expert",
-    responseType: "mcq",
-    context:
-      "A report states:\n• Dataset X: high variance, low interpretability\n• Dataset Y: low variance, high interpretability\n• Dataset Z: moderate variance, moderate interpretability",
-    prompt: "Which dataset is most suitable for generalizable modeling?",
-    options: [
-      { key: "A", label: "Dataset X" },
-      { key: "B", label: "Dataset Y" },
-      { key: "C", label: "Dataset Z" },
-      { key: "D", label: "Insufficient information to determine" },
-    ],
-    correctOption: "C",
-    hint: "Generalizability depends on the balance between variance and interpretability, not extremity.",
-    aiAnswers: [
-      {
-        option: "C",
-        text: "Dataset Z",
-        reason: "Moderate variance allows a balance between overfitting and generalization.",
-        correct: true,
-      },
-      {
-        option: "A",
-        text: "Dataset X",
-        reason: "High variance captures broader edge-case behaviour.",
-        correct: false,
-      },
-    ],
-  },
 
   // ─────────────────────── ANALYTICAL ───────────────────────
   {
@@ -232,37 +203,6 @@ export const QUESTIONS: Question[] = [
       },
     ],
   },
-  {
-    id: "A4",
-    level: "analytical",
-    difficulty: "expert",
-    responseType: "mcq",
-    context:
-      "A recommendation model performs well on training data but poorly in new regions.",
-    prompt: "What is the primary issue?",
-    options: [
-      { key: "A", label: "Model under-training" },
-      { key: "B", label: "Distribution shift (domain generalization failure)" },
-      { key: "C", label: "Excessive model complexity" },
-      { key: "D", label: "Random measurement noise" },
-    ],
-    correctOption: "B",
-    hint: "Think domain shift, not just overfitting.",
-    aiAnswers: [
-      {
-        option: "B",
-        text: "Distribution shift (domain generalization failure)",
-        reason: "Training and deployment environments differ structurally.",
-        correct: true,
-      },
-      {
-        option: "A",
-        text: "Model under-training",
-        reason: "Poor performance always indicates insufficient learning.",
-        correct: false,
-      },
-    ],
-  },
 
   // ─────────────────────── CREATIVITY (open text) ───────────────────────
   {
@@ -338,46 +278,23 @@ export const QUESTIONS: Question[] = [
     ],
     rubricKeywords: ["routing", "real-time", "demand", "pricing", "congestion charge", "forecast", "adaptive", "incentive", "dynamic", "control", "system"],
   },
-  {
-    id: "C4",
-    level: "creativity",
-    difficulty: "expert",
-    responseType: "open",
-    context: "Reduce bureaucratic delay in public services.",
-    prompt: "Propose a process-level redesign, not just more staff.",
-    hint: "Identify whether inefficiency is process-based or capacity-based. Process optimization (automation, workflow redesign) is typically higher impact than adding manpower.",
-    aiAnswers: [
-      {
-        option: null,
-        text: "Process digitization with AI-based document validation and automated workflow routing.",
-        reason: "Attacks the process bottleneck rather than throwing capacity at it.",
-        correct: true,
-      },
-      {
-        option: null,
-        text: "Increase the number of clerks.",
-        reason: "Capacity-based fix; leaves the inefficient process intact.",
-        correct: false,
-      },
-    ],
-    rubricKeywords: ["digit", "automat", "workflow", "validation", "process", "routing", "online", "self-service", "single window", "redesign", "system"],
-  },
 
   // ─────────────────────── PERCEPTUAL ───────────────────────
-  // Spec described this layer as image-based; no images were supplied,
-  // so items are rendered as pattern/structure MCQs.
+  // This layer is image/visual-first: options render as emoji picture
+  // tiles instead of plain text (see `visualOptions`).
   {
     id: "P1",
     level: "perceptual",
     difficulty: "easy",
     responseType: "mcq",
-    context: "Set: Democracy · Monarchy · Republic · Algorithm",
-    prompt: "Which item does not belong?",
+    context: "Four concepts are shown as picture tiles below. Three share one nature; one belongs to a different category entirely.",
+    prompt: "Which picture does not belong with the others?",
+    visualOptions: true,
     options: [
-      { key: "A", label: "Democracy" },
-      { key: "B", label: "Monarchy" },
-      { key: "C", label: "Republic" },
-      { key: "D", label: "Algorithm" },
+      { key: "A", label: "Democracy", emoji: "🗳️" },
+      { key: "B", label: "Monarchy", emoji: "👑" },
+      { key: "C", label: "Republic", emoji: "🏛️" },
+      { key: "D", label: "Algorithm", emoji: "🤖" },
     ],
     correctOption: "D",
     hint: "Identify the ontology mismatch (political system vs computational construct).",
@@ -432,56 +349,27 @@ export const QUESTIONS: Question[] = [
     difficulty: "hard",
     responseType: "mcq",
     context:
-      "Rules:\n• If A increases, B decreases.\n• If B decreases, C increases.\n• If C increases, A decreases.",
-    prompt: "What is the nature of this system?",
+      "Four animals are shown as picture tiles. Intuitive grouping (by habitat or appearance) often disagrees with strict biological classification.",
+    prompt: "Which animal's classification is the MOST ambiguous relative to intuition?",
+    visualOptions: true,
     options: [
-      { key: "A", label: "Independent variable system" },
-      { key: "B", label: "Linear cause-effect chain" },
-      { key: "C", label: "Closed feedback loop system (negative feedback cycle)" },
-      { key: "D", label: "Random stochastic system" },
-    ],
-    correctOption: "C",
-    hint: "Check for closed feedback-loop consistency.",
-    aiAnswers: [
-      {
-        option: "C",
-        text: "Negative feedback loop system",
-        reason: "Cyclic inhibitory structure maintains equilibrium dynamics.",
-        correct: true,
-      },
-      {
-        option: "A",
-        text: "Independent variable system",
-        reason: "Each variable behaves separately despite links.",
-        correct: false,
-      },
-    ],
-  },
-  {
-    id: "P4",
-    level: "perceptual",
-    difficulty: "expert",
-    responseType: "mcq",
-    context: "Items: Whale · Bat · Penguin · Crocodile",
-    prompt: "Which classification boundary is most ambiguous?",
-    options: [
-      { key: "A", label: "Whale" },
-      { key: "B", label: "Bat" },
-      { key: "C", label: "Penguin" },
-      { key: "D", label: "Crocodile" },
+      { key: "A", label: "Whale", emoji: "🐋" },
+      { key: "B", label: "Bat", emoji: "🦇" },
+      { key: "C", label: "Penguin", emoji: "🐧" },
+      { key: "D", label: "Crocodile", emoji: "🐊" },
     ],
     correctOption: "A",
-    hint: "Look for the evolutionary classification mismatch vs intuitive grouping.",
+    hint: "Look for the evolutionary classification mismatch vs intuitive grouping — a sea creature that is not a fish.",
     aiAnswers: [
       {
         option: "A",
-        text: "Whale",
-        reason: "A mammal adapted to an aquatic environment causes classification ambiguity.",
+        text: "Whale 🐋",
+        reason: "A mammal adapted to an aquatic environment causes classification ambiguity (looks like a fish, is a mammal).",
         correct: true,
       },
       {
         option: "D",
-        text: "Crocodile",
+        text: "Crocodile 🐊",
         reason: "Reptile lineage creates classification instability in modern taxonomy.",
         correct: false,
       },
@@ -580,46 +468,24 @@ export const QUESTIONS: Question[] = [
       },
     ],
   },
-  {
-    id: "MTC4",
-    level: "metacognition",
-    difficulty: "expert",
-    responseType: "mcq",
-    context:
-      "• System A: calibrated probabilistic reasoning\n• System B: absolute deterministic confidence",
-    prompt: "Which is more trustworthy?",
-    options: [
-      { key: "A", label: "System A" },
-      { key: "B", label: "System B" },
-      { key: "C", label: "Both are equally trustworthy depending on task type" },
-      { key: "D", label: "Neither system is reliable" },
-    ],
-    correctOption: "A",
-    hint: "Evaluate epistemic humility vs overconfidence risk. Reliable systems express uncertainty proportional to evidence strength.",
-    aiAnswers: [
-      {
-        option: "A",
-        text: "System A",
-        reason: "Calibration reflects epistemic humility and robustness.",
-        correct: true,
-      },
-      {
-        option: "B",
-        text: "System B",
-        reason: "High confidence indicates stronger internal certainty.",
-        correct: false,
-      },
-    ],
-  },
 ];
 
-export const LEVELS: { key: import("./types").Level; title: string; loading: string; blurb: string }[] = [
-  { key: "memory", title: "Memory", loading: "Activating Memory Networks…", blurb: "Structured retention & recall fidelity" },
-  { key: "analytical", title: "Analytical Reasoning", loading: "Running Analytical Simulation…", blurb: "Causal reasoning & structured inference" },
-  { key: "creativity", title: "Creativity", loading: "Engaging Generative Cortex…", blurb: "System design & socio-technical reasoning" },
-  { key: "perceptual", title: "Perceptual Reasoning", loading: "Calibrating Pattern Sensors…", blurb: "Structure, pattern & logical consistency" },
-  { key: "metacognition", title: "Metacognition", loading: "Initializing Epistemic Monitor…", blurb: "Trust evaluation & epistemic reasoning" },
+export const LEVELS: {
+  key: import("./types").Level;
+  title: string;
+  loading: string;
+  blurb: string;
+  emoji: string; // mascot / illustration glyph for this layer
+}[] = [
+  { key: "memory", title: "Memory", loading: "Activating Memory Networks…", blurb: "Structured retention & recall fidelity", emoji: "🧠" },
+  { key: "analytical", title: "Analytical Reasoning", loading: "Running Analytical Simulation…", blurb: "Causal reasoning & structured inference", emoji: "🧩" },
+  { key: "creativity", title: "Creativity", loading: "Engaging Generative Cortex…", blurb: "System design & socio-technical reasoning", emoji: "🎨" },
+  { key: "perceptual", title: "Perceptual Reasoning", loading: "Calibrating Pattern Sensors…", blurb: "Structure, pattern & logical consistency", emoji: "👁️" },
+  { key: "metacognition", title: "Metacognition", loading: "Initializing Epistemic Monitor…", blurb: "Trust evaluation & epistemic reasoning", emoji: "🔍" },
 ];
+
+// 3 items per level (easy / medium / hard).
+export const QUESTIONS_PER_LEVEL = 3;
 
 export function questionsForLevel(level: import("./types").Level): Question[] {
   const order = { easy: 0, medium: 1, hard: 2, expert: 3 } as const;

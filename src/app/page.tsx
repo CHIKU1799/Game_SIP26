@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brand } from "@/components/Brand";
+import { Panda } from "@/components/Panda";
 import { LEVELS } from "@/lib/questions";
+import { getSound } from "@/lib/sound";
 import type { Level } from "@/lib/types";
 
 type Stage = "landing" | "consent" | "onboarding";
@@ -82,6 +84,9 @@ export default function Home() {
               exit={{ opacity: 0, y: -24 }}
               className="text-center"
             >
+              <div className="mb-2 flex justify-center">
+                <Panda mood="wave" size={132} say="Hi! I'm Pip 🐼 Let's play!" />
+              </div>
               <div className="chip mx-auto mb-5 border border-neon/30 bg-neon/5 text-neon">
                 Behavioural Research Instrument
               </div>
@@ -101,25 +106,39 @@ export default function Home() {
                 IIT Madras.
               </p>
               <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-5">
-                {LEVELS.map((l) => (
-                  <div key={l.key} className="glass rounded-xl px-3 py-4">
-                    <div className="text-sm font-semibold text-white">
+                {LEVELS.map((l, i) => (
+                  <motion.div
+                    key={l.key}
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 + i * 0.08 }}
+                    whileHover={{ y: -5, scale: 1.03 }}
+                    className="glass rounded-xl px-3 py-4"
+                  >
+                    <div className="text-2xl">{l.emoji}</div>
+                    <div className="mt-1 text-sm font-semibold text-white">
                       {l.title}
                     </div>
                     <div className="mt-1 text-[11px] text-slate-400">
                       {l.blurb}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-              <button
-                onClick={() => setStage("consent")}
+              <motion.button
+                onClick={() => {
+                  getSound().unlock(); // start background music on first gesture
+                  getSound().play("click");
+                  setStage("consent");
+                }}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
                 className="btn-primary mt-10"
               >
                 Begin Experiment →
-              </button>
+              </motion.button>
               <p className="mt-4 text-xs text-slate-500">
-                ~8–12 minutes · anonymous · voluntary
+                ~6–10 minutes · 15 questions · anonymous · voluntary
               </p>
             </motion.section>
           )}

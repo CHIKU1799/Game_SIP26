@@ -22,6 +22,16 @@ export interface AiAnswer {
   correct: boolean;
 }
 
+export interface Option {
+  key: string;
+  label: string;
+  // Optional visual for image-style MCQ options. `emoji` renders a large
+  // glyph; `image` (a /public path or URL) renders an <img>. When either is
+  // set, the option card switches to an image-tile layout.
+  emoji?: string;
+  image?: string;
+}
+
 export interface Question {
   id: string; // e.g. "M1"
   level: Level;
@@ -29,7 +39,9 @@ export interface Question {
   responseType: ResponseType;
   context: string; // dataset / scenario / claim
   prompt: string;
-  options?: { key: string; label: string }[]; // for mcq
+  options?: Option[]; // for mcq
+  // When true, options carry emoji/image and render as a visual tile grid.
+  visualOptions?: boolean;
   correctOption?: string; // for mcq
   hint: string;
   // aiAnswers[0] = correct/strong, aiAnswers[1] = misleading/weak.

@@ -4,8 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brand } from "@/components/Brand";
-import { LEVELS, questionsForLevel } from "@/lib/questions";
+import { Panda, type PandaMood } from "@/components/Panda";
+import { PandaJourney } from "@/components/PandaJourney";
+import { Confetti } from "@/components/Confetti";
+import { LEVELS, QUESTIONS_PER_LEVEL, questionsForLevel } from "@/lib/questions";
 import { buildResponseRecord, computeFinalScores } from "@/lib/scoring";
+import { getSound } from "@/lib/sound";
 import type {
   Confidence,
   FinalScores,
@@ -13,6 +17,16 @@ import type {
   Question,
   ResponseRecord,
 } from "@/lib/types";
+
+// Friendly nudges from Pip the Panda, shown on the question screen.
+const PANDA_LINES = [
+  "Take your time — there's no wrong way to think!",
+  "Trust your instincts on this one 🐾",
+  "You've got this!",
+  "Read it twice — patterns love to hide.",
+  "Curiosity is the real superpower ✨",
+  "Nice pace! Keep going.",
+];
 
 const MISLEAD_RATE = parseFloat(
   process.env.NEXT_PUBLIC_AI_MISLEAD_RATE ?? "0.35"
@@ -73,17 +87,31 @@ export default function Experiment() {
   const levelMeta = LEVELS.find((l) => l.key === level) ?? LEVELS[0];
   const levelQuestions = level ? questionsForLevel(level) : [];
   const q: Question | null = levelQuestions[qi] ?? null;
-  const totalQuestions = (order?.length ?? 5) * 4;
-  const answeredCount = li * 4 + qi;
+  const totalQuestions = (order?.length ?? LEVELS.length) * QUESTIONS_PER_LEVEL;
+  const answeredCount = li * QUESTIONS_PER_LEVEL + qi;
 
-  // run the level-transition overlay
+  // Mascot mood + a (stable per question) encouragement line.
+  const [pandaMood, setPandaMood] = useState<PandaMood>("wave");
+  const pandaLine = useMemo(
+    () => PANDA_LINES[(li * QUESTIONS_PER_LEVEL + qi) % PANDA_LINES.length],
+    [li, qi]
+  );
+
+  // run the level-transition overlay (panda walks to the next level node)
   useEffect(() => {
     if (phase !== "transition") return;
+    getSound().unlock();
     const t = setTimeout(() => {
       setPhase("question");
+      setPandaMood("wave");
       startRef.current = Date.now();
-    }, 1700);
-    return () => clearTimeout(t);
+    }, 2700);
+    // little fanfare once the panda arrives
+    const a = setTimeout(() => getSound().play("levelup"), li === 0 ? 900 : 1500);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(a);
+    };
   }, [phase, li]);
 
   function resetAnswerState() {
@@ -107,6 +135,7 @@ export default function Experiment() {
 
   async function submit() {
     if (!q || !pid || !confidence) return;
+    getSound().play("submit");
     const rec = buildResponseRecord({
       question: q,
       selectedOption: selected,
@@ -136,7 +165,7 @@ export default function Experiment() {
 
   function advance() {
     if (!order) return;
-    if (qi < 3) {
+    if (qi < QUESTIONS_PER_LEVEL - 1) {
       setQi(qi + 1);
       resetAnswerState();
       return;
@@ -153,6 +182,7 @@ export default function Experiment() {
     const scores = computeFinalScores(recordsRef.current);
     setFinalScores(scores);
     setPhase("complete");
+    getSound().play("complete");
     if (pid) {
       fetch("/api/complete", {
         method: "POST",
@@ -213,7 +243,13 @@ export default function Experiment() {
               className="text-center"
             >
               <div className="mx-auto mb-6 h-px w-40 animate-scan bg-gradient-to-r from-transparent via-neon to-transparent" />
-              <div className="chip mx-auto mb-4 border border-neon2/30 bg-neon2/5 text-neon2">
+
+              <PandaJourney
+                levels={order.map((k) => LEVELS.find((l) => l.key === k)!)}
+                index={li}
+              />
+
+              <div className="chip mx-auto mb-4 mt-4 border border-neon2/30 bg-neon2/5 text-neon2">
                 Level {li + 1} of {order.length}
               </div>
               <h2 className="text-3xl font-bold text-white sm:text-4xl">
@@ -239,7 +275,15 @@ export default function Experiment() {
               exit={{ opacity: 0, y: -20 }}
               className="glass rounded-2xl p-6 sm:p-8"
             >
-              <div className="mb-3 flex items-center gap-2">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <motion.span
+                  initial={{ scale: 0.6, rotate: -10 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  className="grid h-8 w-8 place-items-center rounded-lg border border-neon2/30 bg-neon2/10 text-lg"
+                  title={levelMeta.title}
+                >
+                  {levelMeta.emoji}
+                </motion.span>
                 <span className="chip border border-neon/25 bg-neon/5 capitalize text-neon">
                   {q.difficulty}
                 </span>
@@ -264,12 +308,55 @@ export default function Experiment() {
               <h3 className="mt-5 text-lg font-semibold text-white">{q.prompt}</h3>
 
               {/* Response area */}
-              {q.responseType === "mcq" ? (
+              {q.responseType === "mcq" && q.visualOptions ? (
+                // ── Image / emoji picture-tile options ──
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4">
+                  {q.options!.map((o, i) => (
+                    <motion.button
+                      key={o.key}
+                      onClick={() => {
+                        setSelected(o.key);
+                        setPandaMood("happy");
+                        getSound().play("select");
+                      }}
+                      whileHover={{ y: -4, scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className={`tile-card ${
+                        selected === o.key ? "option-selected" : ""
+                      }`}
+                    >
+                      {o.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={o.image} alt={o.label} className="mx-auto h-20 w-20 object-contain" />
+                      ) : (
+                        <motion.div
+                          className="text-5xl sm:text-6xl"
+                          animate={selected === o.key ? { scale: [1, 1.25, 1] } : {}}
+                          transition={{ duration: 0.4 }}
+                        >
+                          {o.emoji}
+                        </motion.div>
+                      )}
+                      <div className="mt-2 text-sm font-medium text-slate-200">
+                        <span className="mr-1 font-mono text-neon">{o.key}.</span>
+                        {o.label}
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              ) : q.responseType === "mcq" ? (
                 <div className="mt-4 space-y-2.5">
                   {q.options!.map((o) => (
                     <button
                       key={o.key}
-                      onClick={() => setSelected(o.key)}
+                      onClick={() => {
+                        setSelected(o.key);
+                        setPandaMood("happy");
+                        getSound().play("select");
+                      }}
                       className={`option-card ${
                         selected === o.key ? "option-selected" : ""
                       }`}
@@ -296,6 +383,7 @@ export default function Experiment() {
                     onClick={() => {
                       setHintOpen((v) => !v);
                       if (!aiHintUsed) setAiHintUsed(true);
+                      getSound().play("hint");
                     }}
                     className="btn-ghost text-sm"
                   >
@@ -305,6 +393,7 @@ export default function Experiment() {
                     onClick={() => {
                       setAiOpen(true);
                       setAiAnswerUsed(true);
+                      getSound().play("ai");
                     }}
                     className="btn-ghost text-sm"
                   >
@@ -365,7 +454,10 @@ export default function Experiment() {
                   {(["low", "medium", "high"] as Confidence[]).map((c) => (
                     <button
                       key={c}
-                      onClick={() => setConfidence(c)}
+                      onClick={() => {
+                        setConfidence(c);
+                        getSound().play("select");
+                      }}
                       className={`rounded-xl border px-3 py-2.5 text-sm capitalize transition-all ${
                         confidence === c
                           ? "border-neon bg-neon/10 text-white shadow-glow"
@@ -401,6 +493,13 @@ export default function Experiment() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Floating mascot companion during questions */}
+      {phase === "question" && (
+        <div className="pointer-events-none fixed bottom-4 left-4 z-40 hidden sm:block">
+          <Panda mood={pandaMood} size={92} say={pandaLine} />
+        </div>
+      )}
     </main>
   );
 }
@@ -418,9 +517,12 @@ function CompleteScreen({
       key="complete"
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="glass rounded-2xl p-8 text-center"
+      className="glass relative overflow-hidden rounded-2xl p-8 text-center"
     >
-      <div className="text-5xl">🎉</div>
+      <Confetti />
+      <div className="relative z-10 -mt-2 flex justify-center">
+        <Panda mood="cheer" size={132} say="You did it! 🎉" />
+      </div>
       <h2 className="mt-3 text-3xl font-bold text-white">Experiment Completed</h2>
       <p className="mt-2 text-slate-300">
         Thank you for participating in cognitive research at IIT Madras.

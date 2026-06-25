@@ -102,9 +102,15 @@ Export from the admin dashboard:
 
 - **Consent first** — required before any data is collected (ethics-clean).
 - **Anonymous** — no name/email/contact collected; each participant gets a code.
-- **Perceptual layer** is rendered as text MCQ (no images were supplied). Swap to
-  image items in `src/lib/questions.ts` if you add them.
+- **Perceptual layer** uses image/emoji picture-tile options (`visualOptions: true`
+  in `src/lib/questions.ts`). Set an option's `emoji` or `image` (a `/public` path
+  or URL) to make any MCQ visual.
 - **Creativity** is auto-scored heuristically as a *provisional* band; confirm or
   override each one in the admin "Creativity responses" panel for publishable data.
-- 20 items total (4 per level) mapped to easy/medium/hard/expert. Add more items
-  in `src/lib/questions.ts` to increase statistical power.
+- 15 items total (3 per level) mapped to easy / medium / hard (`QUESTIONS_PER_LEVEL`
+  in `src/lib/questions.ts`). Add more items there to increase statistical power.
+- **Audio**: background music + UI sound effects are synthesised at runtime with the
+  Web Audio API (`src/lib/sound.ts`) — no audio files are shipped. Music starts on the
+  first user gesture ("Begin Experiment"); a floating button (bottom-right) mutes it.
+- **Mascot**: "Pip the Panda" (`src/components/Panda.tsx`) is an animated inline SVG
+  that reacts across the landing, level transitions, questions, and completion.
