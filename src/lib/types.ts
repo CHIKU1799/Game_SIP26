@@ -93,4 +93,7 @@ export interface FinalScores {
   mcs_total: number;
   src: number; // 0..3 self-reliance bucket
   human_only_pct: number;
+  // ── timing ──
+  total_active_ms: number; // Σ per-question answering time (client-measured)
+  avg_question_ms: number; // mean per-question time
 }

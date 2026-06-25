@@ -476,12 +476,14 @@ export const LEVELS: {
   loading: string;
   blurb: string;
   emoji: string; // mascot / illustration glyph for this layer
+  color: string; // signature accent (hex) — themes the experiment window
+  color2: string; // secondary hue for gradients
 }[] = [
-  { key: "memory", title: "Memory", loading: "Activating Memory Networks…", blurb: "Structured retention & recall fidelity", emoji: "🧠" },
-  { key: "analytical", title: "Analytical Reasoning", loading: "Running Analytical Simulation…", blurb: "Causal reasoning & structured inference", emoji: "🧩" },
-  { key: "creativity", title: "Creativity", loading: "Engaging Generative Cortex…", blurb: "System design & socio-technical reasoning", emoji: "🎨" },
-  { key: "perceptual", title: "Perceptual Reasoning", loading: "Calibrating Pattern Sensors…", blurb: "Structure, pattern & logical consistency", emoji: "👁️" },
-  { key: "metacognition", title: "Metacognition", loading: "Initializing Epistemic Monitor…", blurb: "Trust evaluation & epistemic reasoning", emoji: "🔍" },
+  { key: "memory", title: "Memory", loading: "Activating Memory Networks…", blurb: "Structured retention & recall fidelity", emoji: "🧠", color: "#38b6ff", color2: "#5c7cff" },
+  { key: "analytical", title: "Analytical Reasoning", loading: "Running Analytical Simulation…", blurb: "Causal reasoning & structured inference", emoji: "🧩", color: "#9b6cff", color2: "#6c4cff" },
+  { key: "creativity", title: "Creativity", loading: "Engaging Generative Cortex…", blurb: "System design & socio-technical reasoning", emoji: "🎨", color: "#ff5ca8", color2: "#ff8a4c" },
+  { key: "perceptual", title: "Perceptual Reasoning", loading: "Calibrating Pattern Sensors…", blurb: "Structure, pattern & logical consistency", emoji: "👁️", color: "#00d49a", color2: "#34e1c8" },
+  { key: "metacognition", title: "Metacognition", loading: "Initializing Epistemic Monitor…", blurb: "Trust evaluation & epistemic reasoning", emoji: "🔍", color: "#ffb547", color2: "#ff7a59" },
 ];
 
 // 3 items per level (easy / medium / hard).

@@ -17,6 +17,10 @@ create table if not exists participants (
   user_agent       text,
   started_at       timestamptz not null default now(),
   completed_at     timestamptz,
+  -- timing (written on completion)
+  duration_ms      bigint,                        -- wall-clock: completed_at − started_at (server-computed)
+  total_active_ms  bigint,                        -- Σ per-question answering time (client-measured)
+  avg_question_ms  bigint,                        -- mean per-question time
   -- aggregate scores (written on completion)
   tps_total        numeric,
   tps_max          int,
@@ -67,6 +71,13 @@ create table if not exists events (
   payload         jsonb,
   created_at      timestamptz not null default now()
 );
+
+-- ── Migrations for existing installs (safe to re-run) ───────────────
+-- If the participants table already existed before timing was added,
+-- these add the new columns without dropping data.
+alter table participants add column if not exists duration_ms     bigint;
+alter table participants add column if not exists total_active_ms bigint;
+alter table participants add column if not exists avg_question_ms bigint;
 
 create index if not exists idx_responses_participant on responses(participant_id);
 create index if not exists idx_responses_level on responses(level);

@@ -136,6 +136,10 @@ export function computeFinalScores(records: ResponseRecord[]): FinalScores {
   const mcs_total = round2(records.reduce((s, r) => s + r.mcs, 0));
   const humanOnly = records.filter((r) => !r.ai_hint_used && !r.ai_answer_used).length;
   const human_only_pct = Math.round((humanOnly / n) * 100);
+  const total_active_ms = records.reduce((s, r) => s + (r.time_spent_ms || 0), 0);
+  const avg_question_ms = records.length
+    ? Math.round(total_active_ms / records.length)
+    : 0;
   return {
     tps_total,
     tps_max,
@@ -146,6 +150,8 @@ export function computeFinalScores(records: ResponseRecord[]): FinalScores {
     mcs_total,
     src: srcBucket(human_only_pct),
     human_only_pct,
+    total_active_ms,
+    avg_question_ms,
   };
 }
 

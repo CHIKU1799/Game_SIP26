@@ -18,6 +18,21 @@ import type {
   ResponseRecord,
 } from "@/lib/types";
 
+// ms → "Xm Ys" (or "Ys") for human-readable durations.
+function fmtDuration(ms: number): string {
+  const s = Math.round((ms || 0) / 1000);
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return m > 0 ? `${m}m ${rem}s` : `${rem}s`;
+}
+
+// hex → rgba helper for building level-tinted gradients/glows.
+function rgba(hex: string, a: number): string {
+  const h = hex.replace("#", "");
+  const n = parseInt(h, 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+}
+
 // Friendly nudges from Pip the Panda, shown on the question screen.
 const PANDA_LINES = [
   "Take your time — there's no wrong way to think!",
@@ -85,6 +100,8 @@ export default function Experiment() {
 
   const level = order?.[li] ?? null;
   const levelMeta = LEVELS.find((l) => l.key === level) ?? LEVELS[0];
+  const theme = levelMeta.color;
+  const theme2 = levelMeta.color2;
   const levelQuestions = level ? questionsForLevel(level) : [];
   const q: Question | null = levelQuestions[qi] ?? null;
   const totalQuestions = (order?.length ?? LEVELS.length) * QUESTIONS_PER_LEVEL;
@@ -201,8 +218,32 @@ export default function Experiment() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col px-5 py-6">
-      <header className="flex items-center justify-between">
+    <main className="relative mx-auto flex min-h-screen max-w-3xl flex-col px-5 py-6">
+      {/* Per-level colour wash — cross-fades as the respondent advances */}
+      <AnimatePresence>
+        <motion.div
+          key={level ?? "intro"}
+          className="pointer-events-none fixed inset-0 z-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.4, ease: "easeInOut" }}
+          style={{
+            background: `radial-gradient(1100px 620px at 12% -8%, ${rgba(
+              theme,
+              0.28
+            )}, transparent 58%), radial-gradient(1000px 720px at 100% 4%, ${rgba(
+              theme2,
+              0.22
+            )}, transparent 55%), radial-gradient(1000px 700px at 50% 118%, ${rgba(
+              theme,
+              0.16
+            )}, transparent 60%)`,
+          }}
+        />
+      </AnimatePresence>
+
+      <header className="relative z-10 flex items-center justify-between">
         <Brand compact />
         <div className="text-right">
           <div className="text-[11px] uppercase tracking-widest text-slate-500">
@@ -214,16 +255,17 @@ export default function Experiment() {
 
       {/* progress bar */}
       {phase !== "complete" && (
-        <div className="mt-5">
-          <div className="mb-1.5 flex justify-between text-[11px] text-slate-400">
-            <span>{levelMeta.title}</span>
-            <span>
+        <div className="relative z-10 mt-5">
+          <div className="mb-1.5 flex justify-between text-[11px]">
+            <span style={{ color: theme }}>{levelMeta.title}</span>
+            <span className="text-slate-400">
               {answeredCount}/{totalQuestions}
             </span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-neon to-neon2"
+              className="h-full rounded-full"
+              style={{ background: `linear-gradient(90deg, ${theme}, ${theme2})` }}
               animate={{ width: `${(answeredCount / totalQuestions) * 100}%` }}
               transition={{ type: "spring", stiffness: 120, damping: 20 }}
             />
@@ -231,7 +273,7 @@ export default function Experiment() {
         </div>
       )}
 
-      <div className="flex flex-1 flex-col justify-center py-6">
+      <div className="relative z-10 flex flex-1 flex-col justify-center py-6">
         <AnimatePresence mode="wait">
           {/* ── LEVEL TRANSITION ── */}
           {phase === "transition" && (
@@ -273,18 +315,32 @@ export default function Experiment() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="glass rounded-2xl p-6 sm:p-8"
+              className="glass relative overflow-hidden rounded-2xl p-6 sm:p-8"
+              style={{
+                borderColor: rgba(theme, 0.45),
+                boxShadow: `0 0 44px ${rgba(theme, 0.18)}`,
+              }}
             >
+              {/* colour accent bar */}
+              <div
+                className="absolute inset-x-0 top-0 h-1"
+                style={{ background: `linear-gradient(90deg, ${theme}, ${theme2})` }}
+              />
+
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <motion.span
                   initial={{ scale: 0.6, rotate: -10 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  className="grid h-8 w-8 place-items-center rounded-lg border border-neon2/30 bg-neon2/10 text-lg"
+                  className="grid h-8 w-8 place-items-center rounded-lg text-lg"
+                  style={{ border: `1px solid ${rgba(theme, 0.4)}`, background: rgba(theme, 0.12) }}
                   title={levelMeta.title}
                 >
                   {levelMeta.emoji}
                 </motion.span>
-                <span className="chip border border-neon/25 bg-neon/5 capitalize text-neon">
+                <span
+                  className="chip capitalize"
+                  style={{ border: `1px solid ${rgba(theme, 0.3)}`, background: rgba(theme, 0.08), color: theme }}
+                >
                   {q.difficulty}
                 </span>
                 <span className="chip border border-white/10 bg-white/5 capitalize text-slate-300">
@@ -324,9 +380,16 @@ export default function Experiment() {
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className={`tile-card ${
-                        selected === o.key ? "option-selected" : ""
-                      }`}
+                      className="tile-card"
+                      style={
+                        selected === o.key
+                          ? {
+                              borderColor: theme,
+                              background: rgba(theme, 0.12),
+                              boxShadow: `0 0 22px ${rgba(theme, 0.32)}`,
+                            }
+                          : undefined
+                      }
                     >
                       {o.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -341,7 +404,9 @@ export default function Experiment() {
                         </motion.div>
                       )}
                       <div className="mt-2 text-sm font-medium text-slate-200">
-                        <span className="mr-1 font-mono text-neon">{o.key}.</span>
+                        <span className="mr-1 font-mono" style={{ color: theme }}>
+                          {o.key}.
+                        </span>
                         {o.label}
                       </div>
                     </motion.button>
@@ -357,11 +422,20 @@ export default function Experiment() {
                         setPandaMood("happy");
                         getSound().play("select");
                       }}
-                      className={`option-card ${
-                        selected === o.key ? "option-selected" : ""
-                      }`}
+                      className="option-card"
+                      style={
+                        selected === o.key
+                          ? {
+                              borderColor: theme,
+                              background: rgba(theme, 0.12),
+                              boxShadow: `0 0 18px ${rgba(theme, 0.3)}`,
+                            }
+                          : undefined
+                      }
                     >
-                      <span className="mr-2 font-mono text-neon">{o.key}.</span>
+                      <span className="mr-2 font-mono" style={{ color: theme }}>
+                        {o.key}.
+                      </span>
                       {o.label}
                     </button>
                   ))}
@@ -458,11 +532,17 @@ export default function Experiment() {
                         setConfidence(c);
                         getSound().play("select");
                       }}
-                      className={`rounded-xl border px-3 py-2.5 text-sm capitalize transition-all ${
+                      className="rounded-xl border px-3 py-2.5 text-sm capitalize transition-all"
+                      style={
                         confidence === c
-                          ? "border-neon bg-neon/10 text-white shadow-glow"
-                          : "border-white/10 text-slate-300 hover:border-neon/40"
-                      }`}
+                          ? {
+                              borderColor: theme,
+                              background: rgba(theme, 0.14),
+                              color: "#fff",
+                              boxShadow: `0 0 16px ${rgba(theme, 0.28)}`,
+                            }
+                          : { borderColor: "rgba(255,255,255,0.1)", color: "#cbd5e1" }
+                      }
                     >
                       {c}
                     </button>
@@ -478,6 +558,10 @@ export default function Experiment() {
                     (q.responseType === "mcq" ? !selected : openText.trim().length < 3)
                   }
                   className="btn-primary"
+                  style={{
+                    background: `linear-gradient(135deg, ${theme}, ${theme2})`,
+                    boxShadow: `0 0 24px ${rgba(theme, 0.4)}`,
+                  }}
                 >
                   {answeredCount === totalQuestions - 1
                     ? "Finish Experiment →"
@@ -538,6 +622,7 @@ function CompleteScreen({
         <Stat label="AI Usage (AUS)" value={`${scores.aus_total}`} />
         <Stat label="AI Reliance (ARS)" value={`${scores.ars_total}`} />
         <Stat label="Self-Reliance (SRC)" value={`${scores.src}/3`} />
+        <Stat label="Time taken" value={fmtDuration(scores.total_active_ms)} />
       </div>
 
       <p className="mt-6 text-sm text-slate-400">

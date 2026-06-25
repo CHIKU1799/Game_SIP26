@@ -18,6 +18,14 @@ import { LEVELS } from "@/lib/questions";
 type Participant = any;
 type ResponseRow = any;
 
+// ms → "Xm Ys" (blank when unknown)
+function fmtMs(ms: any): string {
+  if (ms == null || isNaN(Number(ms))) return "—";
+  const s = Math.round(Number(ms) / 1000);
+  const m = Math.floor(s / 60);
+  return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
+}
+
 export default function Admin() {
   const [pw, setPw] = useState("");
   const [authed, setAuthed] = useState(false);
@@ -98,6 +106,8 @@ export default function Admin() {
   const avg = (arr: number[]) =>
     arr.length ? +(arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2) : 0;
 
+  // avg wall-clock duration over completed sessions that have a recorded time
+  const timed = completed.filter((p) => p.duration_ms != null);
   const kpis = {
     total: filteredParticipants.length,
     completed: completed.length,
@@ -105,6 +115,9 @@ export default function Admin() {
     avgAus: avg(completed.map((p) => p.aus_total ?? 0)),
     avgWaas: avg(completed.map((p) => p.waas_total ?? 0)),
     avgMcs: avg(completed.map((p) => p.mcs_total ?? 0)),
+    avgTimeMs: timed.length
+      ? Math.round(avg(timed.map((p) => Number(p.duration_ms))))
+      : 0,
   };
 
   // performance by level (avg TPS, 0..1 scaled to %)
@@ -218,13 +231,14 @@ export default function Admin() {
       </div>
 
       {/* KPIs */}
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
         <Kpi label="Participants" value={kpis.total} />
         <Kpi label="Completed" value={kpis.completed} />
         <Kpi label="Avg accuracy" value={`${kpis.avgAcc}%`} />
         <Kpi label="Avg AI usage" value={kpis.avgAus} />
         <Kpi label="Avg wrong-AI" value={kpis.avgWaas} accent="warn" />
         <Kpi label="Avg MCS" value={kpis.avgMcs} />
+        <Kpi label="Avg time" value={fmtMs(kpis.avgTimeMs)} />
       </div>
 
       {/* Charts row 1 */}
@@ -320,7 +334,7 @@ export default function Admin() {
           <table className="w-full text-left text-xs">
             <thead className="sticky top-0 bg-panel text-slate-400">
               <tr>
-                {["Code", "Age", "Gender", "Profession", "Acc%", "AUS", "ARS", "WAAS", "MCS", "SRC", "Done"].map(
+                {["Code", "Age", "Gender", "Profession", "Acc%", "AUS", "ARS", "WAAS", "MCS", "SRC", "Time", "Done"].map(
                   (h) => (
                     <th key={h} className="px-2 py-2">{h}</th>
                   )
@@ -340,6 +354,7 @@ export default function Admin() {
                   <td className="px-2 py-1.5">{p.waas_total ?? "—"}</td>
                   <td className="px-2 py-1.5">{p.mcs_total ?? "—"}</td>
                   <td className="px-2 py-1.5">{p.src ?? "—"}</td>
+                  <td className="px-2 py-1.5">{fmtMs(p.duration_ms)}</td>
                   <td className="px-2 py-1.5">{p.completed_at ? "✓" : "·"}</td>
                 </tr>
               ))}
@@ -522,13 +537,19 @@ function ExportButtons({
   function exportCsv() {
     // research-grade: one row per response, joined with demographics
     const pById = new Map(participants.map((p) => [p.id, p]));
-    const cols = [
+    // participant-level columns (sourced from the participant record)
+    const pCols = [
       "participant_code", "age", "gender", "profession",
+      "duration_ms", "total_active_ms", "avg_question_ms",
+    ];
+    const cols = [
+      ...pCols,
       "question_id", "level", "difficulty", "response_type",
       "selected_option", "correct_option", "is_correct", "confidence",
       "ai_hint_used", "ai_answer_used", "ai_answer_shown_correct", "ai_suggested_option",
       "tps", "aus", "ars", "waas", "mcs",
-      "creativity_band", "creativity_manual_band", "time_spent_ms", "open_text",
+      "creativity_band", "creativity_manual_band",
+      "time_spent_ms", "created_at", "open_text",
     ];
     const esc = (v: any) => {
       const s = v == null ? "" : String(v);
@@ -539,13 +560,7 @@ function ExportButtons({
       const p = pById.get(r.participant_id) ?? {};
       lines.push(
         cols
-          .map((c) =>
-            esc(
-              ["participant_code", "age", "gender", "profession"].includes(c)
-                ? (p as any)[c]
-                : r[c]
-            )
-          )
+          .map((c) => esc(pCols.includes(c) ? (p as any)[c] : r[c]))
           .join(",")
       );
     }
