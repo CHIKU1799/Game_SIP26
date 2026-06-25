@@ -218,7 +218,6 @@ export default function Home() {
                 <Field label="Age group">
                   <select value={age} onChange={(e) => setAge(e.target.value)} className="w-full px-3 py-2.5">
                     <option value="">Select…</option>
-                    <option>Under 18</option>
                     <option>18–24</option>
                     <option>25–34</option>
                     <option>35–44</option>
