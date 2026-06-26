@@ -1,469 +1,482 @@
 import type { Question } from "./types";
 
 // ── Question bank (15 items: 3 per cognitive layer) ─────────────────
-// The 3 items per layer are mapped to the easy / medium / hard tiers in
-// order (the former "expert" tier was retired to keep the experiment to
-// 15 questions total).
-// aiAnswers[0] is the CORRECT/strong AI answer; aiAnswers[1] is the
-// MISLEADING/weak one. The engine decides per-participant which gets
+// Grounded in CLASSIC, VALIDATED cognitive paradigms so the instrument
+// measures real constructs (and so the "misleading AI" variant lands on
+// each paradigm's well-known intuitive trap):
+//   • Memory       — backward digit span, recognition, paired associates
+//   • Analytical   — Cognitive Reflection Test (Frederick, 2005)
+//   • Creativity   — Guilford Alternative-Uses + Torrance divergent tasks
+//   • Perceptual   — odd-one-out, inductive number series, mental rotation
+//   • Metacognition— source reliability, calibration, base-rate neglect
+//
+// Items map to the easy / medium / hard tiers in order.
+// aiAnswers[0] = CORRECT/strong AI answer; aiAnswers[1] = MISLEADING/weak
+// one (the intuitive trap). The engine decides per-participant which is
 // shown when "Ask AI" is pressed (see scoring.ts / experiment flow).
 
 export const QUESTIONS: Question[] = [
   // ───────────────────────── MEMORY ─────────────────────────
+  // Backward digit span (WAIS Digit Span — Backward).
   {
     id: "M1",
     level: "memory",
     difficulty: "easy",
     responseType: "mcq",
-    context:
-      "A comparative behavioural dataset reports:\n• Study A: Urban users show higher short-form content recall.\n• Study B: Rural users show higher long-form content retention.\n• Study C: No significant difference in factual recall accuracy across groups.",
-    prompt:
-      "Which study explicitly supports the absence of a group-level cognitive difference in factual recall?",
+    context: "Memorise this sequence of digits:\n\n7 – 2 – 9 – 4 – 6",
+    prompt: "Which option shows the SAME digits in REVERSE order?",
     options: [
-      { key: "A", label: "Study A" },
-      { key: "B", label: "Study B" },
-      { key: "C", label: "Study C" },
-      { key: "D", label: "None of the above" },
+      { key: "A", label: "6 – 4 – 9 – 2 – 7" },
+      { key: "B", label: "7 – 2 – 9 – 4 – 6" },
+      { key: "C", label: "6 – 4 – 2 – 9 – 7" },
+      { key: "D", label: "4 – 6 – 9 – 2 – 7" },
     ],
-    correctOption: "C",
-    hint: "Focus on statistical null-effect framing. Do not confuse engagement metrics (A, B) with recall accuracy (C). Identify the explicit “no significant difference” statement.",
+    correctOption: "A",
+    hint: "Hold the sequence in mind and read it back-to-front: the last digit becomes the first. Don't confuse 'reverse' with the original forward order.",
     aiAnswers: [
       {
-        option: "C",
-        text: "Study C",
-        reason:
-          "It explicitly reports no significant difference in factual recall accuracy, which directly indicates absence of a group-level effect.",
+        option: "A",
+        text: "6 – 4 – 9 – 2 – 7",
+        reason: "Reversing 7‑2‑9‑4‑6 gives 6‑4‑9‑2‑7 — last digit first, first digit last.",
         correct: true,
       },
       {
-        option: "A",
-        text: "Study A",
-        reason:
-          "Urban users’ higher recall suggests a stronger cognitive difference in at least one population segment.",
+        option: "B",
+        text: "7 – 2 – 9 – 4 – 6",
+        reason: "This is the sequence exactly as shown, which is the most familiar ordering.",
         correct: false,
       },
     ],
   },
+  // Recognition memory (which item was NOT studied).
   {
     id: "M2",
     level: "memory",
     difficulty: "medium",
     responseType: "mcq",
-    context:
-      "A cognitive-mapping experiment defines:\n• Stability → Predictability\n• Volatility → Change sensitivity\n• Resilience → Recovery after disturbance\n• Drift → Gradual deviation over time",
-    prompt: "Which term best corresponds to gradual deviation over time?",
+    context: "Study this list for a moment:\n\nMANGO · CHAIR · RIVER · PLANET · TIGER · CLOCK",
+    prompt: "Which of these words did NOT appear in the list above?",
     options: [
-      { key: "A", label: "Stability" },
-      { key: "B", label: "Volatility" },
-      { key: "C", label: "Resilience" },
-      { key: "D", label: "Drift" },
+      { key: "A", label: "RIVER" },
+      { key: "B", label: "PLANET" },
+      { key: "C", label: "GARDEN" },
+      { key: "D", label: "TIGER" },
     ],
-    correctOption: "D",
-    hint: "Distinguish between “sudden change response” vs “slow directional shift.” Avoid conflating volatility with drift.",
+    correctOption: "C",
+    hint: "Scan the studied list and check each option against it. The lure is a word that 'feels' like it fits the theme but was never shown.",
     aiAnswers: [
       {
-        option: "D",
-        text: "Drift",
-        reason:
-          "Drift explicitly encodes gradual, directional change over time without abrupt transitions.",
+        option: "C",
+        text: "GARDEN",
+        reason: "GARDEN never appeared in the list; the other three (RIVER, PLANET, TIGER) all did.",
         correct: true,
       },
       {
-        option: "B",
-        text: "Volatility",
-        reason: "Any change over time can be interpreted as volatility in dynamic systems.",
+        option: "A",
+        text: "RIVER",
+        reason: "RIVER is a nature word and easy to mistake as an outsider in the set.",
         correct: false,
       },
     ],
   },
+  // Paired-associate recall with interference (cued recall).
   {
     id: "M3",
     level: "memory",
     difficulty: "hard",
     responseType: "mcq",
     context:
-      "A multi-city behavioural survey:\n• City A: high routine adherence, low stress\n• City B: moderate routine adherence, moderate stress\n• City C: low routine adherence, high stress",
-    prompt:
-      "Which option most strongly reflects the inverse relationship between routine and stress?",
+      "Learn these four pairs:\n\n• DOCTOR → APPLE\n• WINDOW → TIGER\n• PENCIL → OCEAN\n• GARDEN → ROCKET",
+    prompt: "Which word was paired with PENCIL?",
     options: [
-      { key: "A", label: "City A only" },
-      { key: "B", label: "City B only" },
-      { key: "C", label: "Comparison between City A and City C" },
-      { key: "D", label: "All three cities show identical patterns" },
+      { key: "A", label: "TIGER" },
+      { key: "B", label: "OCEAN" },
+      { key: "C", label: "ROCKET" },
+      { key: "D", label: "APPLE" },
     ],
-    correctOption: "C",
-    hint: "Look for a monotonic inverse pattern alignment across variables, not absolute values.",
+    correctOption: "B",
+    hint: "Retrieve the specific association for PENCIL, not just any word from the set. The distractors are correct answers — but for the wrong cue.",
     aiAnswers: [
       {
-        option: "C",
-        text: "City A vs City C comparison",
-        reason: "Clear inverse gradient between routine adherence and stress level.",
+        option: "B",
+        text: "OCEAN",
+        reason: "PENCIL was explicitly paired with OCEAN in the third pair.",
         correct: true,
       },
       {
-        option: "B",
-        text: "City B",
-        reason: "Midpoint alignment often reflects the most stable system equilibrium.",
+        option: "A",
+        text: "TIGER",
+        reason: "TIGER is one of the studied target words, so it feels familiar and plausible.",
         correct: false,
       },
     ],
   },
 
   // ─────────────────────── ANALYTICAL ───────────────────────
+  // Cognitive Reflection Test — Item 1 (bat & ball).
   {
     id: "A1",
     level: "analytical",
     difficulty: "easy",
     responseType: "mcq",
-    context:
-      "A study finds: “Increased digital tool usage correlates with higher productivity.”\nAdditional observations:\n• Senior employees use more digital tools.\n• Senior employees already have higher productivity.",
-    prompt: "What is the most likely causal interpretation?",
+    context: "A cricket bat and a ball cost ₹1.10 in total.\nThe bat costs ₹1.00 more than the ball.",
+    prompt: "How much does the BALL cost?",
     options: [
-      { key: "A", label: "Digital tools directly increase productivity in all employees" },
-      { key: "B", label: "Seniority is a confounding variable influencing both tool usage and productivity" },
-      { key: "C", label: "Productivity causes employees to adopt more digital tools, with no role for seniority" },
-      { key: "D", label: "The observed relationship proves a causal effect of digital tools" },
+      { key: "A", label: "₹0.10" },
+      { key: "B", label: "₹0.05" },
+      { key: "C", label: "₹1.00" },
+      { key: "D", label: "₹0.15" },
     ],
     correctOption: "B",
-    hint: "Identify whether the variable is a mediator, confounder, or proxy. Focus on hierarchical workplace structure.",
+    hint: "Resist the first answer that pops up. If the ball were ₹0.10, the bat (₹1 more) would be ₹1.10 and the total ₹1.20. Solve ball + (ball + 1.00) = 1.10.",
     aiAnswers: [
       {
         option: "B",
-        text: "Seniority is a confounding variable",
-        reason: "It influences both digital tool usage and productivity independently.",
+        text: "₹0.05",
+        reason: "Ball = x, bat = x + 1.00, so 2x + 1.00 = 1.10 → x = ₹0.05 (bat ₹1.05).",
         correct: true,
       },
       {
         option: "A",
-        text: "Digital tools directly increase productivity",
-        reason: "Tools inherently improve efficiency regardless of hierarchy.",
+        text: "₹0.10",
+        reason: "₹1.10 minus the ₹1.00 difference leaves ₹0.10 for the ball — the obvious split.",
         correct: false,
       },
     ],
   },
+  // Cognitive Reflection Test — Item 2 (widget-making machines).
   {
     id: "A2",
     level: "analytical",
     difficulty: "medium",
     responseType: "mcq",
-    context:
-      "Policy outcomes:\n• Region A: improvement after intervention\n• Region B: no change\n• Region C: deterioration",
-    prompt: "What is the most defensible conclusion?",
+    context: "It takes 5 machines 5 minutes to make 5 widgets.",
+    prompt: "How long would 100 machines take to make 100 widgets?",
     options: [
-      { key: "A", label: "The policy is universally effective" },
-      { key: "B", label: "The policy is ineffective overall" },
-      { key: "C", label: "The policy has context-dependent effects across regions" },
-      { key: "D", label: "The data proves the intervention caused deterioration" },
+      { key: "A", label: "100 minutes" },
+      { key: "B", label: "20 minutes" },
+      { key: "C", label: "5 minutes" },
+      { key: "D", label: "1 minute" },
     ],
     correctOption: "C",
-    hint: "Avoid averaging outcomes. Look for heterogeneity of treatment effect.",
+    hint: "Find the rate per machine. One machine makes one widget in 5 minutes; machines work in parallel, so adding machines doesn't change the time.",
     aiAnswers: [
       {
         option: "C",
-        text: "Context-dependent policy effectiveness",
-        reason: "Mixed outcomes indicate non-uniform causal impact.",
+        text: "5 minutes",
+        reason: "Each machine makes 1 widget in 5 min. 100 machines make 100 widgets in parallel — still 5 minutes.",
         correct: true,
       },
       {
-        option: "B",
-        text: "Policy is ineffective overall",
-        reason: "Any deterioration implies failure.",
+        option: "A",
+        text: "100 minutes",
+        reason: "Scaling everything up 20× suggests the time scales up 20× too, to 100 minutes.",
         correct: false,
       },
     ],
   },
+  // Cognitive Reflection Test — Item 3 (lily pads / exponential doubling).
   {
     id: "A3",
     level: "analytical",
     difficulty: "hard",
     responseType: "mcq",
-    context:
-      "Observed correlation: “Users with higher app engagement report higher satisfaction.”\nHidden variables considered: social connectivity, personality openness, usage dependency.",
-    prompt: "What is the most likely latent driver?",
+    context: "Lily pads on a lake double in area every day.\nIt takes 48 days for the pads to cover the ENTIRE lake.",
+    prompt: "On which day was the lake exactly HALF covered?",
     options: [
-      { key: "A", label: "Social connectivity" },
-      { key: "B", label: "App engagement directly causes satisfaction" },
-      { key: "C", label: "Usage dependency" },
-      { key: "D", label: "Personality openness" },
+      { key: "A", label: "Day 24" },
+      { key: "B", label: "Day 47" },
+      { key: "C", label: "Day 46" },
+      { key: "D", label: "Day 12" },
     ],
-    correctOption: "A",
-    hint: "Look for the variable that can simultaneously increase engagement and satisfaction without direct causality.",
+    correctOption: "B",
+    hint: "Work backwards. If the area doubles each day, then the day before it was full it must have been half. Halving doesn't mean halving the number of days.",
     aiAnswers: [
       {
-        option: "A",
-        text: "Social connectivity",
-        reason: "Higher connectivity increases both engagement and perceived satisfaction.",
+        option: "B",
+        text: "Day 47",
+        reason: "Doubling means the day before full (day 48) the lake was half-covered — day 47.",
         correct: true,
       },
       {
-        option: "B",
-        text: "App engagement directly increases satisfaction",
-        reason: "Usage reinforces positive feedback loops.",
+        option: "A",
+        text: "Day 24",
+        reason: "Half the lake should take half the time, so day 24 — exactly halfway to day 48.",
         correct: false,
       },
     ],
   },
 
   // ─────────────────────── CREATIVITY (open text) ───────────────────────
+  // Guilford Alternative Uses Task — divergent thinking (fluency + originality).
   {
     id: "C1",
     level: "creativity",
     difficulty: "easy",
     responseType: "open",
-    context: "Design a system to reduce overuse of plastic packaging in retail.",
+    context: "A common, everyday clay BRICK.",
     prompt:
-      "Describe your system. Focus on the mechanism that changes behaviour, not just awareness.",
-    hint: "Focus on behavioural reinforcement mechanisms (incentives, friction, feedback loops). Avoid purely informational approaches unless they change the decision architecture.",
+      "List as many unusual, creative uses for a brick as you can — beyond building. Aim for quantity AND originality.",
+    hint: "Both fluency (number of ideas) and originality (how unexpected) count. Push past 'build a wall' — think tool, art, sport, measuring, heating, grinding.",
     aiAnswers: [
       {
         option: null,
-        text: "Dynamic pricing penalty system tied to packaging volume with consumer-visible carbon scoring.",
-        reason: "Changes the decision architecture at point of purchase via incentives + feedback.",
+        text: "Doorstop, paperweight, bookend, nutcracker, straightedge ruler, plant press, pencil holder (drilled), garden border, exercise weight, or ground into red powder to make paint pigment.",
+        reason: "Many varied uses across distinct functions — high fluency and originality.",
         correct: true,
       },
       {
         option: null,
-        text: "Awareness posters at retail locations.",
-        reason: "Purely informational; does not alter the decision architecture.",
+        text: "You can use it to build a wall or a house.",
+        reason: "This is the brick's ordinary purpose — neither unusual nor original.",
         correct: false,
       },
     ],
-    rubricKeywords: ["incentive", "pricing", "penalty", "feedback", "score", "reward", "tax", "friction", "deposit", "refund", "system"],
+    rubricKeywords: ["paperweight", "doorstop", "weapon", "art", "paint", "pigment", "tool", "weight", "press", "hammer", "nut", "ruler", "heat", "sharpen", "border", "holder", "anchor"],
   },
+  // Torrance "Just Suppose" — divergent consequences task.
   {
     id: "C2",
     level: "creativity",
     difficulty: "medium",
     responseType: "open",
-    context: "Improve human decision-making accuracy in high-pressure environments.",
-    prompt: "Propose a system-level intervention, not just more practice.",
-    hint: "Think cognitive augmentation: real-time decision support, uncertainty visualization, error correction under stress. Training alone is a slow adaptation mechanism.",
+    context: "Just suppose that, starting tomorrow, human beings no longer needed to sleep at all.",
+    prompt:
+      "Describe the most interesting and original consequences this would have. Think beyond the obvious.",
+    hint: "Explore second-order ripple effects across society — economy, cities, health, relationships, inequality — not just 'more free time'. Non-obvious consequences score higher.",
     aiAnswers: [
       {
         option: null,
-        text: "AI-assisted decision scaffolding with uncertainty visualization and counterfactual simulation.",
-        reason: "Augments cognition in real time rather than relying on slow training adaptation.",
+        text: "24-hour economies with no night shift premium; 'night' disappears as a cultural category; new inequality between those who use the extra ~8 hours well and those who don't; cities lit and active around the clock; rising mental strain from never powering down.",
+        reason: "Original, multi-domain second-order consequences rather than a single obvious effect.",
         correct: true,
       },
       {
         option: null,
-        text: "More training sessions for workers.",
-        reason: "Slow adaptation mechanism; does not support the decision in the moment.",
+        text: "People would have more time to get their work done.",
+        reason: "A single, obvious first-order effect with no originality or depth.",
         correct: false,
       },
     ],
-    rubricKeywords: ["real-time", "support", "uncertainty", "visualization", "feedback", "scaffold", "simulation", "augment", "alert", "checklist", "system"],
+    rubricKeywords: ["economy", "society", "city", "inequality", "health", "culture", "relationship", "productivity", "night", "mental", "shift", "energy", "social", "change", "24"],
   },
+  // Torrance Product-Improvement — divergent design task.
   {
     id: "C3",
     level: "creativity",
     difficulty: "hard",
     responseType: "open",
-    context: "Reduce city congestion without expanding infrastructure.",
-    prompt: "Describe a demand-side / control-system approach.",
-    hint: "Focus on system-level optimization (demand shaping + real-time routing) rather than structural expansion or behavioural advice alone. Look for feedback-driven control systems.",
+    context: "An ordinary public drinking-water fountain.",
+    prompt:
+      "Redesign it so that far MORE people actually drink enough water each day. Describe the mechanism that changes behaviour.",
+    hint: "Target the behaviour, not just awareness — friction, feedback, incentives, gamification, placement. A mechanism that nudges repeated action beats a one-time reminder.",
     aiAnswers: [
       {
         option: null,
-        text: "Predictive mobility routing using real-time demand forecasting and adaptive transport pricing.",
-        reason: "A feedback-driven control system that shapes demand without new infrastructure.",
+        text: "A tap-in bottle that logs your daily intake on a display, gamified streaks and team leaderboards, on-demand flavour/temperature, and smart placement along high-traffic routes with gentle reminders.",
+        reason: "A behaviour-change mechanism (feedback + incentives + placement), not just information.",
         correct: true,
       },
       {
         option: null,
-        text: "Encourage people to travel less.",
-        reason: "Behavioural advice with no control mechanism.",
+        text: "Put up a sign reminding people to drink more water.",
+        reason: "Purely informational; it does not change the decision architecture or behaviour.",
         correct: false,
       },
     ],
-    rubricKeywords: ["routing", "real-time", "demand", "pricing", "congestion charge", "forecast", "adaptive", "incentive", "dynamic", "control", "system"],
+    rubricKeywords: ["track", "feedback", "gamif", "incentive", "reward", "reminder", "streak", "placement", "flavour", "temperature", "sensor", "app", "nudge", "friction", "behaviour", "mechanism", "leaderboard"],
   },
 
   // ─────────────────────── PERCEPTUAL ───────────────────────
-  // This layer is image/visual-first: options render as emoji picture
-  // tiles instead of plain text (see `visualOptions`).
+  // Odd-one-out categorisation (visual picture tiles).
   {
     id: "P1",
     level: "perceptual",
     difficulty: "easy",
     responseType: "mcq",
-    context: "Four concepts are shown as picture tiles below. Three share one nature; one belongs to a different category entirely.",
-    prompt: "Which picture does not belong with the others?",
+    context: "Four food items are shown as picture tiles. Three share a category; one does not.",
+    prompt: "Which item does NOT belong with the others?",
     visualOptions: true,
     options: [
-      { key: "A", label: "Democracy", emoji: "🗳️" },
-      { key: "B", label: "Monarchy", emoji: "👑" },
-      { key: "C", label: "Republic", emoji: "🏛️" },
-      { key: "D", label: "Algorithm", emoji: "🤖" },
+      { key: "A", label: "Apple", emoji: "🍎" },
+      { key: "B", label: "Banana", emoji: "🍌" },
+      { key: "C", label: "Grapes", emoji: "🍇" },
+      { key: "D", label: "Carrot", emoji: "🥕" },
     ],
     correctOption: "D",
-    hint: "Identify the ontology mismatch (political system vs computational construct).",
+    hint: "Group by botanical category. Three of these are fruits; one is a vegetable.",
     aiAnswers: [
       {
         option: "D",
-        text: "Algorithm",
-        reason: "It is a computational procedure, not a governance system.",
+        text: "Carrot 🥕",
+        reason: "Apple, banana and grapes are fruits; the carrot is a vegetable — the category outlier.",
         correct: true,
       },
       {
         option: "B",
-        text: "Monarchy",
-        reason: "It is the least common modern governance structure.",
+        text: "Banana 🍌",
+        reason: "The banana is the only long, non-round item, so it looks like the odd shape out.",
         correct: false,
       },
     ],
   },
+  // Inductive number series (growing differences).
   {
     id: "P2",
     level: "perceptual",
     difficulty: "medium",
     responseType: "mcq",
-    context: "Signal pattern: Increase → Stabilize → Overcorrect → Damp → ?",
-    prompt: "What completes the sequence?",
+    context: "A number series:\n\n2 · 6 · 12 · 20 · ?",
+    prompt: "Which number comes next in the series?",
     options: [
-      { key: "A", label: "Equilibrium convergence" },
-      { key: "B", label: "Oscillation increase" },
-      { key: "C", label: "System reset" },
-      { key: "D", label: "Random divergence" },
+      { key: "A", label: "24" },
+      { key: "B", label: "28" },
+      { key: "C", label: "30" },
+      { key: "D", label: "26" },
     ],
-    correctOption: "A",
-    hint: "Recognize the system-dynamics cycle (control-systems behaviour).",
+    correctOption: "C",
+    hint: "Look at the gaps between terms: +4, +6, +8 … the gap itself grows by 2 each step. So the next gap is +10.",
     aiAnswers: [
       {
-        option: "A",
-        text: "Equilibrium convergence",
-        reason: "Dampening leads to stabilization.",
+        option: "C",
+        text: "30",
+        reason: "Differences are 4, 6, 8, then 10 → 20 + 10 = 30.",
         correct: true,
       },
       {
         option: "B",
-        text: "Oscillation increase",
-        reason: "Systems often re-enter instability after damping.",
+        text: "28",
+        reason: "The last visible gap was +8, so adding 8 again gives 28.",
         correct: false,
       },
     ],
   },
+  // Mental rotation / pattern continuation (visual arrows).
   {
     id: "P3",
     level: "perceptual",
     difficulty: "hard",
     responseType: "mcq",
-    context:
-      "Four animals are shown as picture tiles. Intuitive grouping (by habitat or appearance) often disagrees with strict biological classification.",
-    prompt: "Which animal's classification is the MOST ambiguous relative to intuition?",
+    context: "Each arrow rotates 90° CLOCKWISE from the one before it:\n\n⬆️  →  ➡️  →  ⬇️  →  ?",
+    prompt: "Which arrow comes next in the rotation?",
     visualOptions: true,
     options: [
-      { key: "A", label: "Whale", emoji: "🐋" },
-      { key: "B", label: "Bat", emoji: "🦇" },
-      { key: "C", label: "Penguin", emoji: "🐧" },
-      { key: "D", label: "Crocodile", emoji: "🐊" },
+      { key: "A", label: "Left", emoji: "⬅️" },
+      { key: "B", label: "Up", emoji: "⬆️" },
+      { key: "C", label: "Right", emoji: "➡️" },
+      { key: "D", label: "Down", emoji: "⬇️" },
     ],
     correctOption: "A",
-    hint: "Look for the evolutionary classification mismatch vs intuitive grouping — a sea creature that is not a fish.",
+    hint: "Continue the clockwise turn: up → right → down → … the next 90° clockwise step points left.",
     aiAnswers: [
       {
         option: "A",
-        text: "Whale 🐋",
-        reason: "A mammal adapted to an aquatic environment causes classification ambiguity (looks like a fish, is a mammal).",
+        text: "Left ⬅️",
+        reason: "Clockwise from down is left (up→right→down→left), continuing the rotation.",
         correct: true,
       },
       {
-        option: "D",
-        text: "Crocodile 🐊",
-        reason: "Reptile lineage creates classification instability in modern taxonomy.",
+        option: "B",
+        text: "Up ⬆️",
+        reason: "After three arrows the pattern seems to loop back to where it started — up.",
         correct: false,
       },
     ],
   },
 
   // ─────────────────────── METACOGNITION ───────────────────────
+  // Evidence-quality / source-reliability judgement.
   {
     id: "MTC1",
     level: "metacognition",
     difficulty: "easy",
     responseType: "mcq",
-    context: "Two sources:\n• Meta-analysis of 30 studies\n• Single high-impact experimental study",
-    prompt: "Which is more reliable for a general conclusion?",
+    context:
+      "Two sources disagree about whether a diet works:\n\n• A meta-analysis combining 30 controlled studies\n• One viral social-media testimonial",
+    prompt: "Which source is more reliable for a general conclusion?",
     options: [
-      { key: "A", label: "Meta-analysis of 30 studies" },
-      { key: "B", label: "Single high-impact experimental study" },
-      { key: "C", label: "Both are equally reliable in all contexts" },
-      { key: "D", label: "Neither is suitable for scientific inference" },
+      { key: "A", label: "The meta-analysis of 30 studies" },
+      { key: "B", label: "The viral testimonial" },
+      { key: "C", label: "Both are equally reliable" },
+      { key: "D", label: "Neither can inform anything" },
     ],
     correctOption: "A",
-    hint: "Compare external vs internal validity. Meta-analysis reduces variance across contexts; single experiments increase control precision.",
+    hint: "Weigh sample size and control. Aggregated, controlled evidence across many studies beats one vivid personal story.",
     aiAnswers: [
       {
         option: "A",
-        text: "Meta-analysis",
-        reason: "Aggregates multiple datasets, reducing sampling bias.",
+        text: "The meta-analysis of 30 studies",
+        reason: "It pools many controlled studies, reducing bias and sampling noise — far stronger evidence.",
         correct: true,
       },
       {
         option: "B",
-        text: "Single experimental study",
-        reason: "Controlled design gives higher internal validity.",
+        text: "The viral testimonial",
+        reason: "A real person sharing real results feels concrete and convincing.",
         correct: false,
       },
     ],
   },
+  // Calibration vs outcome bias.
   {
     id: "MTC2",
     level: "metacognition",
     difficulty: "medium",
     responseType: "mcq",
     context:
-      "Model outputs:\n• Model A: prediction with a confidence interval\n• Model B: a deterministic prediction",
-    prompt: "Which is epistemically stronger?",
+      "Two forecasters predict tomorrow's weather:\n\n• Forecaster A: “70% chance of rain”\n• Forecaster B: “It will DEFINITELY rain — 100% certain”",
+    prompt: "Whose judgement is better CALIBRATED under genuine uncertainty?",
     options: [
-      { key: "A", label: "Model A" },
-      { key: "B", label: "Model B" },
-      { key: "C", label: "Both are equally strong but for different use-cases" },
-      { key: "D", label: "Cannot be determined without accuracy metrics" },
+      { key: "A", label: "Forecaster A (70%)" },
+      { key: "B", label: "Forecaster B (100% certain)" },
+      { key: "C", label: "Whoever turns out to be right tomorrow" },
+      { key: "D", label: "They are equally well-calibrated" },
     ],
     correctOption: "A",
-    hint: "Look for calibration and uncertainty quantification. In probabilistic reasoning, explicit uncertainty is a strength, not a weakness.",
+    hint: "Calibration means stated confidence should match the evidence — and it's judged over many predictions, not by a single outcome. Absolute certainty about an uncertain event is overconfidence.",
     aiAnswers: [
       {
         option: "A",
-        text: "Model A",
-        reason: "Explicit uncertainty improves calibration and reliability.",
+        text: "Forecaster A (70%)",
+        reason: "Expressing proportional uncertainty is well-calibrated; certainty about a chancy event is not.",
         correct: true,
       },
       {
-        option: "B",
-        text: "Model B",
-        reason: "Deterministic output is easier for decision-making.",
+        option: "C",
+        text: "Whoever turns out to be right tomorrow",
+        reason: "Tomorrow's result will reveal who actually had the better judgement.",
         correct: false,
       },
     ],
   },
+  // Base-rate neglect (Bayesian reasoning under a rare condition).
   {
     id: "MTC3",
     level: "metacognition",
     difficulty: "hard",
     responseType: "mcq",
-    context: "Claim: “Exercise improves cognitive performance.”",
-    prompt: "Which statement is most accurate about this claim?",
+    context:
+      "A screening test is 95% accurate.\nThe condition it detects affects only 1 in 1,000 people.\nA randomly chosen person tests POSITIVE.",
+    prompt: "Roughly how likely is it that they ACTUALLY have the condition?",
     options: [
-      { key: "A", label: "Fully established direct causal relationship" },
-      { key: "B", label: "Partially valid causal claim with mediated pathways" },
-      { key: "C", label: "No evidence of any relationship exists" },
-      { key: "D", label: "Correlation is irrelevant to cognition" },
+      { key: "A", label: "About 95%" },
+      { key: "B", label: "About 50%" },
+      { key: "C", label: "About 2%" },
+      { key: "D", label: "About 80%" },
     ],
-    correctOption: "B",
-    hint: "Check whether causality is directly established or mediated through confounders (sleep, stress, neurochemistry, lifestyle clustering).",
+    correctOption: "C",
+    hint: "Don't ignore the base rate. The condition is rare, so among all positives, false positives vastly outnumber true ones — making the real chance low, not 95%.",
     aiAnswers: [
       {
-        option: "B",
-        text: "Partially valid causal claim",
-        reason: "Mediated through physiological and psychological pathways.",
+        option: "C",
+        text: "About 2%",
+        reason: "Of ~1,000 people, ~1 truly has it (a true positive) while ~50 are false positives — so a positive means roughly a 1-in-50 (≈2%) chance.",
         correct: true,
       },
       {
         option: "A",
-        text: "Direct causal relationship fully established",
-        reason: "Empirical association is strong enough to conclude causality.",
+        text: "About 95%",
+        reason: "The test is 95% accurate, so a positive result should mean about a 95% chance.",
         correct: false,
       },
     ],
@@ -479,11 +492,11 @@ export const LEVELS: {
   color: string; // signature accent (hex) — themes the experiment window
   color2: string; // secondary hue for gradients
 }[] = [
-  { key: "memory", title: "Memory", loading: "Activating Memory Networks…", blurb: "Structured retention & recall fidelity", emoji: "🧠", color: "#38b6ff", color2: "#5c7cff" },
-  { key: "analytical", title: "Analytical Reasoning", loading: "Running Analytical Simulation…", blurb: "Causal reasoning & structured inference", emoji: "🧩", color: "#9b6cff", color2: "#6c4cff" },
-  { key: "creativity", title: "Creativity", loading: "Engaging Generative Cortex…", blurb: "System design & socio-technical reasoning", emoji: "🎨", color: "#ff5ca8", color2: "#ff8a4c" },
-  { key: "perceptual", title: "Perceptual Reasoning", loading: "Calibrating Pattern Sensors…", blurb: "Structure, pattern & logical consistency", emoji: "👁️", color: "#00d49a", color2: "#34e1c8" },
-  { key: "metacognition", title: "Metacognition", loading: "Initializing Epistemic Monitor…", blurb: "Trust evaluation & epistemic reasoning", emoji: "🔍", color: "#ffb547", color2: "#ff7a59" },
+  { key: "memory", title: "Memory", loading: "Activating Memory Networks…", blurb: "Working memory & associative recall", emoji: "🧠", color: "#38b6ff", color2: "#5c7cff" },
+  { key: "analytical", title: "Analytical Reasoning", loading: "Running Analytical Simulation…", blurb: "Reflective reasoning & logic", emoji: "🧩", color: "#9b6cff", color2: "#6c4cff" },
+  { key: "creativity", title: "Creativity", loading: "Engaging Generative Cortex…", blurb: "Divergent thinking & idea generation", emoji: "🎨", color: "#ff5ca8", color2: "#ff8a4c" },
+  { key: "perceptual", title: "Perceptual Reasoning", loading: "Calibrating Pattern Sensors…", blurb: "Pattern, sequence & rotation", emoji: "👁️", color: "#00d49a", color2: "#34e1c8" },
+  { key: "metacognition", title: "Metacognition", loading: "Initializing Epistemic Monitor…", blurb: "Calibration & evidence evaluation", emoji: "🔍", color: "#ffb547", color2: "#ff7a59" },
 ];
 
 // 3 items per level (easy / medium / hard).
