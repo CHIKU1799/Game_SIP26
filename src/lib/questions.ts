@@ -5,7 +5,8 @@ import type { Question } from "./types";
 // measures real constructs (and so the "misleading AI" variant lands on
 // each paradigm's well-known intuitive trap):
 //   • Memory       — backward digit span, recognition, paired associates
-//   • Analytical   — Cognitive Reflection Test (Frederick, 2005)
+//                    (context is shown for a timed study window, then HIDDEN)
+//   • Analytical   — inverse proportion, successive %, deductive constraint
 //   • Creativity   — Guilford Alternative-Uses + Torrance divergent tasks
 //   • Perceptual   — odd-one-out, inductive number series, mental rotation
 //   • Metacognition— source reliability, calibration, base-rate neglect
@@ -17,191 +18,201 @@ import type { Question } from "./types";
 
 export const QUESTIONS: Question[] = [
   // ───────────────────────── MEMORY ─────────────────────────
-  // Backward digit span (WAIS Digit Span — Backward).
+  // Every memory item shows its `context` for a timed study window and then
+  // HIDES it, so the participant must answer from memory (see experiment flow).
+  // Backward digit span (WAIS Digit Span — Backward), 6 digits.
   {
     id: "M1",
     level: "memory",
     difficulty: "easy",
     responseType: "mcq",
-    context: "Memorise this sequence of digits:\n\n7 – 2 – 9 – 4 – 6",
+    studyMs: 5000,
+    context: "Memorise this sequence of digits:\n\n4 – 1 – 8 – 6 – 3 – 9",
     prompt: "Which option shows the SAME digits in REVERSE order?",
     options: [
-      { key: "A", label: "6 – 4 – 9 – 2 – 7" },
-      { key: "B", label: "7 – 2 – 9 – 4 – 6" },
-      { key: "C", label: "6 – 4 – 2 – 9 – 7" },
-      { key: "D", label: "4 – 6 – 9 – 2 – 7" },
+      { key: "A", label: "9 – 3 – 6 – 8 – 1 – 4" },
+      { key: "B", label: "4 – 1 – 8 – 6 – 3 – 9" },
+      { key: "C", label: "9 – 3 – 8 – 6 – 1 – 4" },
+      { key: "D", label: "9 – 6 – 3 – 8 – 1 – 4" },
     ],
     correctOption: "A",
-    hint: "Hold the sequence in mind and read it back-to-front: the last digit becomes the first. Don't confuse 'reverse' with the original forward order.",
+    hint: "Hold all six digits in mind and read them back-to-front: the last digit (9) becomes the first, the first (4) becomes the last. Don't confuse 'reverse' with the original forward order.",
     aiAnswers: [
       {
         option: "A",
-        text: "6 – 4 – 9 – 2 – 7",
-        reason: "Reversing 7‑2‑9‑4‑6 gives 6‑4‑9‑2‑7 — last digit first, first digit last.",
+        text: "9 – 3 – 6 – 8 – 1 – 4",
+        reason: "Reversing 4‑1‑8‑6‑3‑9 gives 9‑3‑6‑8‑1‑4 — last digit first, first digit last.",
         correct: true,
       },
       {
         option: "B",
-        text: "7 – 2 – 9 – 4 – 6",
+        text: "4 – 1 – 8 – 6 – 3 – 9",
         reason: "This is the sequence exactly as shown, which is the most familiar ordering.",
         correct: false,
       },
     ],
   },
-  // Recognition memory (which item was NOT studied).
+  // Recognition memory with a semantic lure — 8-item list (which was NOT shown).
   {
     id: "M2",
     level: "memory",
     difficulty: "medium",
     responseType: "mcq",
-    context: "Study this list for a moment:\n\nMANGO · CHAIR · RIVER · PLANET · TIGER · CLOCK",
-    prompt: "Which of these words did NOT appear in the list above?",
+    studyMs: 5000,
+    context:
+      "Study this list of words:\n\nVELVET · COMPASS · THUNDER · ORCHID · MARBLE · FALCON · LANTERN · HARBOUR",
+    prompt: "Which of these words did NOT appear in the list?",
     options: [
-      { key: "A", label: "RIVER" },
-      { key: "B", label: "PLANET" },
-      { key: "C", label: "GARDEN" },
-      { key: "D", label: "TIGER" },
+      { key: "A", label: "ORCHID" },
+      { key: "B", label: "CANYON" },
+      { key: "C", label: "LANTERN" },
+      { key: "D", label: "FALCON" },
     ],
-    correctOption: "C",
-    hint: "Scan the studied list and check each option against it. The lure is a word that 'feels' like it fits the theme but was never shown.",
+    correctOption: "B",
+    hint: "Check each option against the eight studied words. The lure is one that fits the same vivid nature-and-objects theme but was never actually shown.",
     aiAnswers: [
       {
-        option: "C",
-        text: "GARDEN",
-        reason: "GARDEN never appeared in the list; the other three (RIVER, PLANET, TIGER) all did.",
+        option: "B",
+        text: "CANYON",
+        reason: "CANYON never appeared; ORCHID, LANTERN and FALCON were all in the list.",
         correct: true,
       },
       {
         option: "A",
-        text: "RIVER",
-        reason: "RIVER is a nature word and easy to mistake as an outsider in the set.",
+        text: "ORCHID",
+        reason: "ORCHID is the most unusual word in the set, so it feels like the one that wasn't there.",
         correct: false,
       },
     ],
   },
-  // Paired-associate recall with interference (cued recall).
+  // Paired-associate recall with heavy interference — 5 pairs (cued recall).
   {
     id: "M3",
     level: "memory",
     difficulty: "hard",
     responseType: "mcq",
+    studyMs: 6000,
     context:
-      "Learn these four pairs:\n\n• DOCTOR → APPLE\n• WINDOW → TIGER\n• PENCIL → OCEAN\n• GARDEN → ROCKET",
-    prompt: "Which word was paired with PENCIL?",
+      "Learn these five word-pairs:\n\n• SILVER → DESERT\n• CASTLE → VIOLIN\n• PEPPER → GLACIER\n• ANCHOR → MEADOW\n• FOREST → DIAMOND",
+    prompt: "Which word was paired with PEPPER?",
     options: [
-      { key: "A", label: "TIGER" },
-      { key: "B", label: "OCEAN" },
-      { key: "C", label: "ROCKET" },
-      { key: "D", label: "APPLE" },
+      { key: "A", label: "MEADOW" },
+      { key: "B", label: "GLACIER" },
+      { key: "C", label: "VIOLIN" },
+      { key: "D", label: "DIAMOND" },
     ],
     correctOption: "B",
-    hint: "Retrieve the specific association for PENCIL, not just any word from the set. The distractors are correct answers — but for the wrong cue.",
+    hint: "Retrieve the specific partner of PEPPER, not just any studied word. Every distractor is a real response word — but from a different pair.",
     aiAnswers: [
       {
         option: "B",
-        text: "OCEAN",
-        reason: "PENCIL was explicitly paired with OCEAN in the third pair.",
+        text: "GLACIER",
+        reason: "PEPPER was paired with GLACIER in the third pair.",
         correct: true,
       },
       {
         option: "A",
-        text: "TIGER",
-        reason: "TIGER is one of the studied target words, so it feels familiar and plausible.",
+        text: "MEADOW",
+        reason: "MEADOW is one of the studied response words, so it feels familiar and plausible.",
         correct: false,
       },
     ],
   },
 
   // ─────────────────────── ANALYTICAL ───────────────────────
-  // Cognitive Reflection Test — Item 1 (bat & ball).
+  // Each item keeps a strong intuitive trap (so the misleading-AI variant
+  // lands), but demands real multi-step reasoning rather than recall.
+  // Inverse proportion — resists the "fewer workers ⇒ less time" pull.
   {
     id: "A1",
     level: "analytical",
     difficulty: "easy",
     responseType: "mcq",
-    context: "A cricket bat and a ball cost ₹1.10 in total.\nThe bat costs ₹1.00 more than the ball.",
-    prompt: "How much does the BALL cost?",
+    context: "8 painters take 6 hours to paint a wall.\nThey all work at the same steady pace.",
+    prompt: "How long would 4 painters take to paint the SAME wall?",
     options: [
-      { key: "A", label: "₹0.10" },
-      { key: "B", label: "₹0.05" },
-      { key: "C", label: "₹1.00" },
-      { key: "D", label: "₹0.15" },
+      { key: "A", label: "12 hours" },
+      { key: "B", label: "3 hours" },
+      { key: "C", label: "6 hours" },
+      { key: "D", label: "10 hours" },
     ],
-    correctOption: "B",
-    hint: "Resist the first answer that pops up. If the ball were ₹0.10, the bat (₹1 more) would be ₹1.10 and the total ₹1.20. Solve ball + (ball + 1.00) = 1.10.",
+    correctOption: "A",
+    hint: "The total work is fixed at 8 × 6 = 48 painter-hours. With fewer painters the time goes UP, not down: 48 ÷ 4.",
     aiAnswers: [
       {
-        option: "B",
-        text: "₹0.05",
-        reason: "Ball = x, bat = x + 1.00, so 2x + 1.00 = 1.10 → x = ₹0.05 (bat ₹1.05).",
+        option: "A",
+        text: "12 hours",
+        reason: "The job is 8 × 6 = 48 painter-hours. With 4 painters: 48 ÷ 4 = 12 hours.",
         correct: true,
       },
       {
-        option: "A",
-        text: "₹0.10",
-        reason: "₹1.10 minus the ₹1.00 difference leaves ₹0.10 for the ball — the obvious split.",
+        option: "B",
+        text: "3 hours",
+        reason: "Halving the painters from 8 to 4 should halve the time from 6 hours to 3.",
         correct: false,
       },
     ],
   },
-  // Cognitive Reflection Test — Item 2 (widget-making machines).
+  // Successive percentage change — the "they cancel out" trap.
   {
     id: "A2",
     level: "analytical",
     difficulty: "medium",
     responseType: "mcq",
-    context: "It takes 5 machines 5 minutes to make 5 widgets.",
-    prompt: "How long would 100 machines take to make 100 widgets?",
+    context:
+      "A jacket's price is first cut by 20% in a sale.\nThe next week, that reduced price is raised by 20%.",
+    prompt: "Compared with its ORIGINAL price, the final price is…",
     options: [
-      { key: "A", label: "100 minutes" },
-      { key: "B", label: "20 minutes" },
-      { key: "C", label: "5 minutes" },
-      { key: "D", label: "1 minute" },
+      { key: "A", label: "4% lower" },
+      { key: "B", label: "Exactly the same" },
+      { key: "C", label: "4% higher" },
+      { key: "D", label: "20% lower" },
     ],
-    correctOption: "C",
-    hint: "Find the rate per machine. One machine makes one widget in 5 minutes; machines work in parallel, so adding machines doesn't change the time.",
+    correctOption: "A",
+    hint: "The two 20%s apply to different amounts. Try ₹100 → −20% = ₹80 → +20% of 80 = ₹96. Equivalently 0.8 × 1.2 = 0.96.",
     aiAnswers: [
       {
-        option: "C",
-        text: "5 minutes",
-        reason: "Each machine makes 1 widget in 5 min. 100 machines make 100 widgets in parallel — still 5 minutes.",
+        option: "A",
+        text: "4% lower",
+        reason: "0.8 × 1.2 = 0.96, so the final price is 96% of the original — 4% lower.",
         correct: true,
       },
       {
-        option: "A",
-        text: "100 minutes",
-        reason: "Scaling everything up 20× suggests the time scales up 20× too, to 100 minutes.",
+        option: "B",
+        text: "Exactly the same",
+        reason: "A 20% drop and a 20% rise are equal and opposite, so they cancel back to the original.",
         correct: false,
       },
     ],
   },
-  // Cognitive Reflection Test — Item 3 (lily pads / exponential doubling).
+  // Deductive puzzle — mislabelled boxes, single draw (constraint reasoning).
   {
     id: "A3",
     level: "analytical",
     difficulty: "hard",
     responseType: "mcq",
-    context: "Lily pads on a lake double in area every day.\nIt takes 48 days for the pads to cover the ENTIRE lake.",
-    prompt: "On which day was the lake exactly HALF covered?",
+    context:
+      "Three sealed boxes are labelled APPLES, ORANGES and MIXED.\nYou are told every one of the three labels is WRONG.\nYou may draw a single fruit from just ONE box, without looking inside.",
+    prompt: "From which box should you draw to correctly relabel ALL three?",
     options: [
-      { key: "A", label: "Day 24" },
-      { key: "B", label: "Day 47" },
-      { key: "C", label: "Day 46" },
-      { key: "D", label: "Day 12" },
+      { key: "A", label: "The box labelled MIXED" },
+      { key: "B", label: "The box labelled APPLES" },
+      { key: "C", label: "The box labelled ORANGES" },
+      { key: "D", label: "It's impossible from a single draw" },
     ],
-    correctOption: "B",
-    hint: "Work backwards. If the area doubles each day, then the day before it was full it must have been half. Halving doesn't mean halving the number of days.",
+    correctOption: "A",
+    hint: "Use the fact that every label is wrong. The box labelled MIXED therefore cannot be mixed — it is pure — so one fruit reveals its true type, and that forces the other two.",
     aiAnswers: [
       {
-        option: "B",
-        text: "Day 47",
-        reason: "Doubling means the day before full (day 48) the lake was half-covered — day 47.",
+        option: "A",
+        text: "The box labelled MIXED",
+        reason: "Since every label is wrong, the MIXED box is actually pure. One fruit tells you which pure type it is; the other two boxes are then forced, because their labels are wrong too.",
         correct: true,
       },
       {
-        option: "A",
-        text: "Day 24",
-        reason: "Half the lake should take half the time, so day 24 — exactly halfway to day 48.",
+        option: "D",
+        text: "It's impossible from a single draw",
+        reason: "Three unknown boxes from one fruit seems like far too little information to fix all three labels.",
         correct: false,
       },
     ],

@@ -70,6 +70,11 @@ export default function Experiment() {
   const [aiAnswerUsed, setAiAnswerUsed] = useState(false);
   const startRef = useRef<number>(0);
 
+  // memory "study" sub-phase: show the context alone with a countdown, then
+  // hide it before the prompt + options appear (a genuine memorise-then-recall).
+  const [studying, setStudying] = useState(false);
+  const [studyLeft, setStudyLeft] = useState(0);
+
   const recordsRef = useRef<ResponseRecord[]>([]);
   const [finalScores, setFinalScores] = useState<FinalScores | null>(null);
 
@@ -130,6 +135,37 @@ export default function Experiment() {
       clearTimeout(a);
     };
   }, [phase, li]);
+
+  // Begin (or skip) the study window whenever a new question is shown.
+  useEffect(() => {
+    if (phase !== "question" || !q) return;
+    if (q.studyMs) {
+      setStudying(true);
+      setStudyLeft(Math.ceil(q.studyMs / 1000));
+    } else {
+      setStudying(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, li, qi, q?.id]);
+
+  // Tick the study countdown; when it reaches 0, hide the context and start
+  // the answer timer fresh (so memorising time is excluded from time_spent).
+  useEffect(() => {
+    if (!studying) return;
+    if (studyLeft <= 0) {
+      setStudying(false);
+      startRef.current = Date.now();
+      return;
+    }
+    const t = setTimeout(() => setStudyLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [studying, studyLeft]);
+
+  // Let a fast memoriser reveal the question early.
+  function revealNow() {
+    setStudying(false);
+    startRef.current = Date.now();
+  }
 
   function resetAnswerState() {
     setSelected(null);
@@ -346,20 +382,72 @@ export default function Experiment() {
                 <span className="chip border border-white/10 bg-white/5 capitalize text-slate-300">
                   {q.responseType === "open" ? "Open response" : "Multiple choice"}
                 </span>
-                {!aiHintUsed && !aiAnswerUsed && (
+                {!aiHintUsed && !aiAnswerUsed && !studying && (
                   <span className="chip border border-accent/30 bg-accent/5 text-accent">
                     ● Human-only mode
                   </span>
                 )}
+                {studying && (
+                  <span className="chip border border-warn/30 bg-warn/5 text-warn">
+                    ● Memorise
+                  </span>
+                )}
               </div>
 
-              {/* Context block */}
-              <div className="rounded-xl border border-white/8 bg-black/20 p-4 text-sm text-slate-300">
-                <div className="mb-1 text-[11px] uppercase tracking-widest text-slate-500">
-                  Context
+              {/* ── STUDY (memorise) sub-phase: context alone + countdown ── */}
+              {studying ? (
+                <div className="mt-2">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="text-[11px] uppercase tracking-widest text-slate-500">
+                      Memorise this — it disappears when the timer ends
+                    </div>
+                    <div
+                      className="grid h-9 w-9 place-items-center rounded-full font-mono text-sm font-bold"
+                      style={{
+                        color: theme,
+                        border: `2px solid ${rgba(theme, 0.55)}`,
+                        background: rgba(theme, 0.12),
+                      }}
+                    >
+                      {studyLeft}
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-xl border bg-black/20 p-5 text-center"
+                    style={{ borderColor: rgba(theme, 0.4) }}
+                  >
+                    <p className="whitespace-pre-line text-lg leading-relaxed text-white">
+                      {q.context}
+                    </p>
+                  </div>
+                  {/* draining timer bar */}
+                  <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+                    <motion.div
+                      key={q.id}
+                      className="h-full rounded-full"
+                      style={{ background: `linear-gradient(90deg, ${theme}, ${theme2})` }}
+                      initial={{ width: "100%" }}
+                      animate={{ width: "0%" }}
+                      transition={{ duration: (q.studyMs ?? 5000) / 1000, ease: "linear" }}
+                    />
+                  </div>
+                  <div className="mt-4 flex justify-end">
+                    <button onClick={revealNow} className="btn-ghost text-sm">
+                      I've memorised it →
+                    </button>
+                  </div>
                 </div>
-                <p className="whitespace-pre-line leading-relaxed">{q.context}</p>
-              </div>
+              ) : (
+              <>
+              {/* Context block — hidden for memory items (answered from memory) */}
+              {!q.studyMs && (
+                <div className="rounded-xl border border-white/8 bg-black/20 p-4 text-sm text-slate-300">
+                  <div className="mb-1 text-[11px] uppercase tracking-widest text-slate-500">
+                    Context
+                  </div>
+                  <p className="whitespace-pre-line leading-relaxed">{q.context}</p>
+                </div>
+              )}
 
               <h3 className="mt-5 text-lg font-semibold text-white">{q.prompt}</h3>
 
@@ -568,6 +656,8 @@ export default function Experiment() {
                     : "Submit & Continue →"}
                 </button>
               </div>
+              </>
+              )}
             </motion.div>
           )}
 

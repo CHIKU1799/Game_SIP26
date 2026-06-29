@@ -6,11 +6,11 @@ import { motion } from "framer-motion";
 // Positions are deterministic (no Math.random at render) to avoid SSR
 // hydration mismatch.
 const ORBS = [
-  { x: "8%", y: "20%", s: 220, c: "rgba(124,92,255,0.16)", d: 16 },
-  { x: "78%", y: "12%", s: 260, c: "rgba(56,225,255,0.14)", d: 20 },
-  { x: "62%", y: "70%", s: 200, c: "rgba(0,255,163,0.10)", d: 18 },
-  { x: "18%", y: "78%", s: 180, c: "rgba(56,225,255,0.12)", d: 22 },
-  { x: "42%", y: "40%", s: 150, c: "rgba(124,92,255,0.10)", d: 14 },
+  { x: "6%", y: "18%", s: 300, c: "rgba(138,125,242,0.13)", d: 26 },
+  { x: "80%", y: "10%", s: 340, c: "rgba(84,211,194,0.11)", d: 30 },
+  { x: "64%", y: "72%", s: 280, c: "rgba(244,134,168,0.08)", d: 28 },
+  { x: "16%", y: "80%", s: 240, c: "rgba(84,211,194,0.10)", d: 32 },
+  { x: "44%", y: "42%", s: 200, c: "rgba(138,125,242,0.08)", d: 24 },
 ];
 
 export function Particles() {

@@ -43,6 +43,10 @@ export interface Question {
   // When true, options carry emoji/image and render as a visual tile grid.
   visualOptions?: boolean;
   correctOption?: string; // for mcq
+  // When set, the `context` is shown ALONE for this many ms with a countdown
+  // (a "study / memorise" window) and then HIDDEN before the prompt + options
+  // appear — turning the item into a genuine memory test. Used by memory items.
+  studyMs?: number;
   hint: string;
   // aiAnswers[0] = correct/strong, aiAnswers[1] = misleading/weak.
   aiAnswers: AiAnswer[];

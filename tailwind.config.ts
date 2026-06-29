@@ -5,20 +5,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#070b14",
-        panel: "#0d1426",
-        neon: "#38e1ff",
-        neon2: "#7c5cff",
-        accent: "#00ffa3",
-        warn: "#ffb547",
+        ink: "#090d1a",
+        panel: "#101627",
+        neon: "#54d3c2", // soft teal (primary)
+        neon2: "#8a7df2", // periwinkle indigo (secondary)
+        accent: "#37d99a", // calm emerald
+        warn: "#f0b96b", // warm amber
       },
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       boxShadow: {
-        glow: "0 0 30px rgba(56,225,255,0.25)",
-        glow2: "0 0 40px rgba(124,92,255,0.30)",
+        glow: "0 0 30px rgba(84,211,194,0.22)",
+        glow2: "0 0 40px rgba(138,125,242,0.26)",
       },
       keyframes: {
         pulseGlow: {
