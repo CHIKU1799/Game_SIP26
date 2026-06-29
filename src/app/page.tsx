@@ -177,7 +177,7 @@ export default function Home() {
                   type="checkbox"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
-                  className="mt-1 h-4 w-4 accent-[#38e1ff]"
+                  className="mt-1 h-4 w-4 accent-[#54d3c2]"
                 />
                 <span>
                   I am 18 or older, I have read and understood the above, and I

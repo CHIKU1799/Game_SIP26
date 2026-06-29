@@ -82,7 +82,7 @@ export function Panda({
         viewBox="0 0 140 200"
         animate={bodyAnim}
         transition={{ duration: bodyDur, repeat: Infinity, ease: "easeInOut" }}
-        style={{ filter: "drop-shadow(0 10px 18px rgba(56,225,255,0.22))" }}
+        style={{ filter: "drop-shadow(0 10px 18px rgba(84,211,194,0.22))" }}
       >
         {/* ── LEGS (behind body) ── */}
         <motion.g animate={legBack} transition={stepT} style={{ originX: "58px", originY: "150px" }}>

@@ -250,7 +250,7 @@ export default function Admin() {
               <XAxis dataKey="level" stroke="#7c8aa6" fontSize={11} />
               <YAxis stroke="#7c8aa6" fontSize={11} domain={[0, 100]} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="score" radius={[6, 6, 0, 0]} fill="#38e1ff" />
+              <Bar dataKey="score" radius={[6, 6, 0, 0]} fill="#54d3c2" />
             </BarChart>
           </ResponsiveContainer>
         </Panel>
@@ -262,7 +262,7 @@ export default function Admin() {
               <XAxis dataKey="bucket" stroke="#7c8aa6" fontSize={10} />
               <YAxis stroke="#7c8aa6" fontSize={11} allowDecimals={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="count" radius={[6, 6, 0, 0]} fill="#7c5cff" />
+              <Bar dataKey="count" radius={[6, 6, 0, 0]} fill="#8a7df2" />
             </BarChart>
           </ResponsiveContainer>
         </Panel>
@@ -278,7 +278,7 @@ export default function Admin() {
               <YAxis stroke="#7c8aa6" fontSize={11} domain={[0, 100]} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="accuracy" name="Accuracy %" radius={[6, 6, 0, 0]} fill="#00ffa3" />
+              <Bar dataKey="accuracy" name="Accuracy %" radius={[6, 6, 0, 0]} fill="#37d99a" />
               <Bar dataKey="n" name="# responses" radius={[6, 6, 0, 0]} fill="#2b3b5c" />
             </BarChart>
           </ResponsiveContainer>

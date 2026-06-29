@@ -56,7 +56,7 @@ export function PandaJourney({
             <motion.div
               animate={
                 current
-                  ? { scale: [1, 1.25, 1], boxShadow: ["0 0 0px #38e1ff", "0 0 18px #38e1ff", "0 0 8px #38e1ff"] }
+                  ? { scale: [1, 1.25, 1], boxShadow: ["0 0 0px #54d3c2", "0 0 18px #54d3c2", "0 0 8px #54d3c2"] }
                   : {}
               }
               transition={{ duration: 1.2, repeat: Infinity }}
